@@ -8,8 +8,12 @@ export interface UserBasicData {
   permissions: RolesEnum[];
 }
 
-export type FindUserResponse = Omit<UserBasicData, 'password'>;
+export type FilteredUser = Omit<UserBasicData, 'password'>;
+
+export interface FindUserResponse extends DefaultResponse {
+  user?: FilteredUser;
+}
 
 export interface FindUsersResponse extends DefaultResponse {
-  users?: FindUserResponse[];
+  users?: FilteredUser[];
 }

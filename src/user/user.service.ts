@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { User } from './entities/user.entity';
-import { FindUserResponse, FindUsersResponse } from '../types/interfaces/user';
+import {
+  FilteredUser,
+  FindUserResponse,
+  FindUsersResponse,
+} from '../types/interfaces/user';
 
 @Injectable()
 export class UserService {
-  userFilter(user: User): FindUserResponse {
+  userFilter(user: User): FilteredUser {
     const { id, email, permissions } = user;
     return {
       id,
@@ -16,7 +20,7 @@ export class UserService {
   async findAll(): Promise<FindUsersResponse> {
     try {
       const users = await User.find();
-      const usersAfterFiltration: FindUserResponse[] = users.map(user =>
+      const usersAfterFiltration: FilteredUser[] = users.map(user =>
         this.userFilter(user),
       );
       return {
@@ -32,8 +36,20 @@ export class UserService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(id: string): Promise<FindUserResponse> {
+    try {
+      const user = this.userFilter(await User.findOneByOrFail({ id }));
+      return {
+        user,
+        message: 'Pomyślnie pobrano dane użytkownika.',
+        isSuccess: true,
+      };
+    } catch (e) {
+      return {
+        message: 'Nie znaleziono użytkownika.',
+        isSuccess: false,
+      };
+    }
   }
 
   update(id: number, updateUserDto) {
