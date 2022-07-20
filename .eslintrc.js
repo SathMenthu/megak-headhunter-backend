@@ -1,21 +1,28 @@
 module.exports = {
   env: {
-    browser: true,
+    node: true,
     es6: true,
   },
-  extends: ["airbnb-base", "prettier"],
+  extends: [
+    'plugin:@typescript-eslint/recommended',
+    'airbnb-base',
+    'airbnb-typescript/base',
+  ],
   parserOptions: {
-    ecmaVersion: 12,
-    sourceType: "module",
+    ecmaVersion: 11,
+    sourceType: 'module',
+    project: './tsconfig.json',
+    createDefaultProgram: true,
   },
-  plugins: ["prettier"],
-  "rules": {
-    "prettier/prettier": "error",
-    "no-unused-vars": "warn",
-    "no-console": "off",
-    "func-names": "off",
-    "no-process-exit": "off",
-    "object-shorthand": "off",
-    "class-methods-use-this": "off"
-  }
+  plugins: ['prettier'],
+  rules: {
+    'prettier/prettier': 'error',
+    'no-unused-vars': 'warn',
+    'no-console': 'off',
+    'func-names': 'off',
+    'no-process-exit': 'off',
+    'object-shorthand': 'off',
+    'class-methods-use-this': 'off',
+    'import/prefer-default-export': 'off',
+  },
 };
