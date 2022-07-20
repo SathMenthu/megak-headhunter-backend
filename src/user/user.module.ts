@@ -7,5 +7,6 @@ import { UtilitiesModule } from '../utilities/utilities.module';
   controllers: [UserController],
   providers: [UserService],
   imports: [UtilitiesModule],
+  exports: [UserService],
 })
 export class UserModule {}
