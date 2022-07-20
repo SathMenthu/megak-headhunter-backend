@@ -27,3 +27,7 @@ export const typeOrmConfig: TypeOrmModuleAsyncOptions = {
     TypeOrmConfig.getOrmConfig(),
   inject: [ConfigService],
 };
+
+export const secretConfig = {
+  HASH_SECRET_KEY: 'secret',
+};
