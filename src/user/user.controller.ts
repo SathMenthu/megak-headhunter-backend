@@ -1,15 +1,30 @@
-import { Controller, Get, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Post,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import {
   DefaultResponse,
   EditedUserData,
   FindUserResponse,
   FindUsersResponse,
+  UserBasicData,
 } from '../types/interfaces';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  // @TODO delete in future, just for tests (later will import users from .csv)
+  @Post('/')
+  create(@Body() user: Omit<UserBasicData, 'id'>): Promise<FindUsersResponse> {
+    return this.userService.create(user);
+  }
 
   @Get('/')
   findAll(): Promise<FindUsersResponse> {

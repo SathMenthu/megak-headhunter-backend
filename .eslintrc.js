@@ -28,5 +28,6 @@ module.exports = {
     'no-await-in-loop': 'off',
     'no-extra-boolean-cast': 'off',
     'no-param-reassign': 'off',
+    'no-else-return': 'off',
   },
 };

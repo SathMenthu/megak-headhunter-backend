@@ -1,12 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { JwtPayload, sign } from 'jsonwebtoken';
 import { v4 as uuid } from 'uuid';
-import { AuthLoginData, TokenPayload } from '../types';
-import { UtilitiesService } from '../utilities/utilities.service';\
 import { Response } from 'express';
+import { AuthLoginData, TokenPayload } from '../types';
+import { UtilitiesService } from '../utilities/utilities.service';
 import { User } from '../user/entities/user.entity';
 import { secretConfig } from '../../config/config';
-
 
 @Injectable()
 export class AuthService {
