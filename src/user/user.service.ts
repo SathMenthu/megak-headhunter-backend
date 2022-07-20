@@ -5,9 +5,11 @@ import {
   FilteredUser,
   FindUserResponse,
   FindUsersResponse,
+  UserBasicData,
 } from '../types/interfaces/user';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { DefaultResponse } from '../types/interfaces';
+import { RolesEnum } from '../types';
 
 @Injectable()
 export class UserService {
@@ -97,6 +99,38 @@ export class UserService {
     } catch (e) {
       return {
         message: `An error occurred while deleting the user`,
+        isSuccess: false,
+      };
+    }
+  }
+
+  async create(user: Omit<UserBasicData, 'id'>) {
+    try {
+      const { email, password, permissions } = user;
+      const foundUser = await User.findOneBy({ email });
+      if (foundUser) {
+        return {
+          message: 'E-mail address is in use.',
+          isSuccess: false,
+        };
+      } else {
+        const newUser = new User();
+        newUser.email = email;
+        newUser.password = this.utilitiesService.hashPassword(password);
+        newUser.permissions = permissions
+          ? [RolesEnum.STUDENT, ...permissions]
+          : [RolesEnum.STUDENT];
+        await newUser.save();
+        const filtratedUser = this.userFilter(newUser);
+        return {
+          message: `User was successfully created.`,
+          isSuccess: true,
+          user: filtratedUser,
+        };
+      }
+    } catch (error) {
+      return {
+        message: 'An error occurred while creating the user',
         isSuccess: false,
       };
     }

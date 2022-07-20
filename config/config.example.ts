@@ -30,4 +30,5 @@ export const typeOrmConfig: TypeOrmModuleAsyncOptions = {
 
 export const secretConfig = {
   HASH_SECRET_KEY: 'secret',
+  TOKEN_SECRET: 'secret',
 };
