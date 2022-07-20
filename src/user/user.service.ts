@@ -7,6 +7,7 @@ import {
   FindUsersResponse,
 } from '../types/interfaces/user';
 import { UtilitiesService } from '../utilities/utilities.service';
+import { DefaultResponse } from '../types/interfaces';
 
 @Injectable()
 export class UserService {
@@ -86,7 +87,18 @@ export class UserService {
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(id: string): Promise<DefaultResponse> {
+    try {
+      await User.delete(id);
+      return {
+        message: `User was successfully deleted.`,
+        isSuccess: true,
+      };
+    } catch (e) {
+      return {
+        message: `An error occurred while deleting the user`,
+        isSuccess: false,
+      };
+    }
   }
 }

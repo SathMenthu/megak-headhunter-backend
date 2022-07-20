@@ -1,6 +1,11 @@
 import { Controller, Get, Body, Patch, Param, Delete } from '@nestjs/common';
 import { UserService } from './user.service';
-import { FindUserResponse, FindUsersResponse } from '../types/interfaces';
+import {
+  DefaultResponse,
+  EditedUserData,
+  FindUserResponse,
+  FindUsersResponse,
+} from '../types/interfaces';
 
 @Controller('user')
 export class UserController {
@@ -11,18 +16,21 @@ export class UserController {
     return this.userService.findAll();
   }
 
-  @Get(':id')
+  @Get('/:id')
   findOne(@Param('id') id: string): Promise<FindUserResponse> {
     return this.userService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto) {
-    return this.userService.update(id, updateUserDto);
+  @Patch('/:id')
+  update(
+    @Param('id') id: string,
+    @Body() editedUserData: EditedUserData,
+  ): Promise<FindUserResponse> {
+    return this.userService.update(id, editedUserData);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
+  @Delete('/:id')
+  remove(@Param('id') id: string): Promise<DefaultResponse> {
+    return this.userService.remove(id);
   }
 }
