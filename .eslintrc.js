@@ -25,5 +25,8 @@ module.exports = {
     'object-shorthand': 'off',
     'class-methods-use-this': 'off',
     'import/prefer-default-export': 'off',
+    'no-await-in-loop': 'off',
+    'no-extra-boolean-cast': 'off',
+    'no-param-reassign': 'off',
   },
 };
