@@ -17,3 +17,7 @@ export interface FindUserResponse extends DefaultResponse {
 export interface FindUsersResponse extends DefaultResponse {
   users?: FilteredUser[];
 }
+
+export interface EditedUserData
+  extends Omit<UserBasicData, 'id'>,
+    DefaultResponse {}

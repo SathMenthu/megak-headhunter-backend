@@ -4,6 +4,7 @@ import { UtilitiesController } from './utilities.controller';
 
 @Module({
   controllers: [UtilitiesController],
-  providers: [UtilitiesService]
+  providers: [UtilitiesService],
+  exports: [UtilitiesService],
 })
 export class UtilitiesModule {}
