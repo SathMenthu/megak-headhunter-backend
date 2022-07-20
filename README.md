@@ -1,3 +1,8 @@
+## Requirements
+```bash
+Node: v16.14.2
+```
+
 ## Installation
 
 ```bash
