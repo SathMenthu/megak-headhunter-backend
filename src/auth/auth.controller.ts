@@ -9,10 +9,10 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
+import { AuthLoginData } from 'types';
 import { AuthService } from './auth.service';
-import { AuthLoginData } from '../../types';
-import { UserData } from '../decorators/user-data-decorator';
 import { User } from '../user/entities/user.entity';
+import { UserData } from '../decorators/user-data-decorator';
 
 @Controller('auth')
 export class AuthController {
