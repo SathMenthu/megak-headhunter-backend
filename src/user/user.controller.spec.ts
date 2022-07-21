@@ -6,7 +6,7 @@ import { UserService } from './user.service';
 describe('UserController', () => {
   let controller: UserController;
 
-  const mockUsersService = {
+  const mockUserService = {
     create: jest.fn(dto => ({
       id: 'test_id',
       ...dto,
@@ -33,7 +33,7 @@ describe('UserController', () => {
       providers: [UserService],
     })
       .overrideProvider(UserService)
-      .useValue(mockUsersService)
+      .useValue(mockUserService)
       .compile();
 
     controller = module.get<UserController>(UserController);
@@ -48,7 +48,7 @@ describe('UserController', () => {
       id: expect.any(String),
       ...user,
     });
-    expect(mockUsersService.create).toHaveBeenCalledWith(user);
+    expect(mockUserService.create).toHaveBeenCalledWith(user);
   });
 
   it('should return users list', () => {
@@ -57,6 +57,6 @@ describe('UserController', () => {
       message: expect.any(String),
       users: [],
     });
-    expect(mockUsersService.findAll).toHaveBeenCalled();
+    expect(mockUserService.findAll).toHaveBeenCalled();
   });
 });
