@@ -7,12 +7,12 @@ describe('UserController', () => {
   let controller: UserController;
 
   const mockUsersService = {
-    create: jest.fn(dto => {
-      return {
-        ...dto,
-      };
-    }),
+    create: jest.fn(dto => ({
+      id: 'test_id',
+      ...dto,
+    })),
   };
+
   const user = {
     email: 'test@example.com',
     password: 'test',
@@ -33,5 +33,13 @@ describe('UserController', () => {
 
   it('should be defined', () => {
     expect(controller).toBeDefined();
+  });
+
+  it('should create user', () => {
+    expect(controller.create(user)).toEqual({
+      id: expect.any(String),
+      ...user,
+    });
+    expect(mockUsersService.create).toHaveBeenCalledWith(user);
   });
 });
