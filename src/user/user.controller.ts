@@ -14,7 +14,7 @@ import {
   FindUserResponse,
   FindUsersResponse,
   UserBasicData,
-} from '../types/interfaces';
+} from '../../types/interfaces';
 
 @Controller('user')
 export class UserController {

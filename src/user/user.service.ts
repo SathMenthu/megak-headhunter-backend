@@ -6,10 +6,10 @@ import {
   FindUserResponse,
   FindUsersResponse,
   UserBasicData,
-} from '../types/interfaces/user';
+} from '../../types/interfaces/user';
 import { UtilitiesService } from '../utilities/utilities.service';
-import { DefaultResponse } from '../types/interfaces';
-import { RolesEnum } from '../types';
+import { DefaultResponse } from '../../types/interfaces';
+import { RolesEnum } from '../../types';
 
 @Injectable()
 export class UserService {
