@@ -7,14 +7,14 @@ import {
   Delete,
   Post,
 } from '@nestjs/common';
-import { UserService } from './user.service';
 import {
   DefaultResponse,
   EditedUserData,
   FindUserResponse,
   FindUsersResponse,
   UserBasicData,
-} from '../types/interfaces';
+} from 'types';
+import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {

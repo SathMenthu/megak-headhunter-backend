@@ -1,6 +1,5 @@
-import { RolesEnum } from 'src/types';
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { UserBasicData } from '../../types/interfaces/user';
+import { RolesEnum, UserBasicData } from 'types';
 
 @Entity()
 export class User extends BaseEntity implements UserBasicData {
