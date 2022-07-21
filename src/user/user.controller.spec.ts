@@ -133,13 +133,14 @@ describe('UserController', () => {
       },
     };
 
-    expect(
-      controller.update('abc', {
-        id: 'abc',
-        email: 'test@example.com',
-        password: 'test_pwd',
-        permissions: [RolesEnum.STUDENT],
-      }),
-    ).toEqual(result);
+    const dto = {
+      id: 'abc',
+      email: 'test@example.com',
+      password: 'test_pwd',
+      permissions: [RolesEnum.STUDENT],
+    };
+
+    expect(controller.update('abc', dto)).toEqual(result);
+    expect(mockUserService.update).toHaveBeenCalledWith('abc', dto);
   });
 });
