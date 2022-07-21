@@ -1,13 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { DefaultResponse, RolesEnum } from 'types';
-import { User } from './entities/user.entity';
 import {
+  DefaultResponse,
+  RolesEnum,
   EditedUserData,
   FilteredUser,
   FindUserResponse,
   FindUsersResponse,
   UserBasicData,
-} from '../../types/interfaces/user';
+} from 'types';
+import { User } from './entities/user.entity';
 import { UtilitiesService } from '../utilities/utilities.service';
 
 @Injectable()
