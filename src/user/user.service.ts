@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { DefaultResponse, RolesEnum } from 'types';
 import { User } from './entities/user.entity';
 import {
   EditedUserData,
@@ -8,8 +9,6 @@ import {
   UserBasicData,
 } from '../../types/interfaces/user';
 import { UtilitiesService } from '../utilities/utilities.service';
-import { DefaultResponse } from '../../types/interfaces';
-import { RolesEnum } from '../../types';
 
 @Injectable()
 export class UserService {
