@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import {
   DefaultResponse,
-  EditedUserData,
   FindUserResponse,
   FindUsersResponse,
   UserBasicData,
@@ -39,7 +38,7 @@ export class UserController {
   @Patch('/:id')
   update(
     @Param('id') id: string,
-    @Body() editedUserData: EditedUserData,
+    @Body() editedUserData: UserBasicData,
   ): Promise<FindUserResponse> {
     return this.userService.update(id, editedUserData);
   }

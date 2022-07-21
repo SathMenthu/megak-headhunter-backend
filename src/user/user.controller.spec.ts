@@ -45,17 +45,17 @@ describe('UserController', () => {
       }),
     ),
 
-    // update: jest.fn(
-    //   (id: string, editedUserData: EditedUserData): FindUserResponse => ({
-    //     isSuccess: true,
-    //     message: 'test message',
-    //     user: {
-    //       id,
-    //       email: editedUserData.email,
-    //       permissions: editedUserData.permissions,
-    //     },
-    //   }),
-    // ),
+    update: jest.fn(
+      (id: string, editedUserData: EditedUserData): FindUserResponse => ({
+        isSuccess: true,
+        message: 'test message',
+        user: {
+          id,
+          email: editedUserData.email,
+          permissions: editedUserData.permissions,
+        },
+      }),
+    ),
   };
 
   const user = {
@@ -122,21 +122,24 @@ describe('UserController', () => {
     expect(mockUserService.remove).toHaveBeenCalledWith('abc');
   });
 
-  // it('should update user', () => {
-  //   const result = {
-  //     isSuccess: true,
-  //     message: expect.any(String),
-  //     user: {
-  //       id: expect.any(String),
-  //       email: expect.any(String),
-  //       permissions: [RolesEnum.STUDENT],
-  //     },
-  //   };
-  //
-  //   expect(
-  //     controller.update('abc', {
-  //       password: 'test_pwd',
-  //     }),
-  //   ).toEqual(result);
-  // });
+  it('should update user', () => {
+    const result = {
+      isSuccess: true,
+      message: expect.any(String),
+      user: {
+        id: expect.any(String),
+        email: expect.any(String),
+        permissions: [RolesEnum.STUDENT],
+      },
+    };
+
+    expect(
+      controller.update('abc', {
+        id: 'abc',
+        email: 'test@example.com',
+        password: 'test_pwd',
+        permissions: [RolesEnum.STUDENT],
+      }),
+    ).toEqual(result);
+  });
 });
