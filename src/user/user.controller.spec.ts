@@ -1,4 +1,10 @@
-import { FindUserResponse, FindUsersResponse, RolesEnum } from 'types';
+import {
+  DefaultResponse,
+  EditedUserData,
+  FindUserResponse,
+  FindUsersResponse,
+  RolesEnum,
+} from 'types';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
@@ -31,6 +37,25 @@ describe('UserController', () => {
         },
       }),
     ),
+
+    remove: jest.fn(
+      (id: string): DefaultResponse => ({
+        isSuccess: true,
+        message: 'test message',
+      }),
+    ),
+
+    // update: jest.fn(
+    //   (id: string, editedUserData: EditedUserData): FindUserResponse => ({
+    //     isSuccess: true,
+    //     message: 'test message',
+    //     user: {
+    //       id,
+    //       email: editedUserData.email,
+    //       permissions: editedUserData.permissions,
+    //     },
+    //   }),
+    // ),
   };
 
   const user = {
@@ -86,4 +111,32 @@ describe('UserController', () => {
     expect(controller.findOne('abc')).toEqual(result);
     expect(mockUserService.findOne).toHaveBeenCalledWith('abc');
   });
+
+  it('should remove user', () => {
+    const result = {
+      isSuccess: true,
+      message: expect.any(String),
+    };
+
+    expect(controller.remove('abc')).toEqual(result);
+    expect(mockUserService.remove).toHaveBeenCalledWith('abc');
+  });
+
+  // it('should update user', () => {
+  //   const result = {
+  //     isSuccess: true,
+  //     message: expect.any(String),
+  //     user: {
+  //       id: expect.any(String),
+  //       email: expect.any(String),
+  //       permissions: [RolesEnum.STUDENT],
+  //     },
+  //   };
+  //
+  //   expect(
+  //     controller.update('abc', {
+  //       password: 'test_pwd',
+  //     }),
+  //   ).toEqual(result);
+  // });
 });
