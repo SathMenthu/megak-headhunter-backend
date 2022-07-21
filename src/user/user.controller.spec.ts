@@ -4,6 +4,7 @@ import {
   FindUserResponse,
   FindUsersResponse,
   RolesEnum,
+  UserBasicData,
 } from 'types';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
@@ -13,10 +14,13 @@ describe('UserController', () => {
   let controller: UserController;
 
   const mockUserService = {
-    create: jest.fn(dto => ({
-      id: 'test_id',
-      ...dto,
-    })),
+    create: jest.fn(
+      (dto: Omit<UserBasicData, 'id'>): FindUsersResponse => ({
+        isSuccess: true,
+        message: 'test_message',
+        users: [],
+      }),
+    ),
 
     findAll: jest.fn(
       (): FindUsersResponse => ({
@@ -82,8 +86,9 @@ describe('UserController', () => {
 
   it('should create user', () => {
     expect(controller.create(user)).toEqual({
-      id: expect.any(String),
-      ...user,
+      isSuccess: expect.any(Boolean),
+      message: expect.any(String),
+      users: [],
     });
     expect(mockUserService.create).toHaveBeenCalledWith(user);
   });
