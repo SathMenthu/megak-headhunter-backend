@@ -1,4 +1,4 @@
-import { FindUsersResponse, RolesEnum } from 'types';
+import { FindUserResponse, FindUsersResponse, RolesEnum } from 'types';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
@@ -17,6 +17,18 @@ describe('UserController', () => {
         isSuccess: true,
         message: 'test message',
         users: [],
+      }),
+    ),
+
+    findOne: jest.fn(
+      (id: string): FindUserResponse => ({
+        isSuccess: true,
+        message: 'test message',
+        user: {
+          id,
+          email: 'abc@example.com',
+          permissions: [RolesEnum.STUDENT],
+        },
       }),
     ),
   };
@@ -58,5 +70,20 @@ describe('UserController', () => {
       users: [],
     });
     expect(mockUserService.findAll).toHaveBeenCalled();
+  });
+
+  it('should return user', () => {
+    const result = {
+      isSuccess: true,
+      message: expect.any(String),
+      user: {
+        id: expect.any(String),
+        email: expect.any(String),
+        permissions: [RolesEnum.STUDENT],
+      },
+    };
+
+    expect(controller.findOne('abc')).toEqual(result);
+    expect(mockUserService.findOne).toHaveBeenCalledWith('abc');
   });
 });
