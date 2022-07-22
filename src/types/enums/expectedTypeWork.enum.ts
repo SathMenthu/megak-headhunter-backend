@@ -1,7 +1,7 @@
 export enum ExpectedTypeWorkEnum {
-  'na miejscu',
-  'gotowość do przeprowadzki',
-  'wyłącznie zdalnie',
-  'hybrydowo',
-  'bez znaczenia',
+  'at location',
+  'willingness to relocate' ,
+  'only remotely' ,
+  'hybrid' ,
+  'irrelevant'
 }
