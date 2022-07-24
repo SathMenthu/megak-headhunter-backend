@@ -7,6 +7,7 @@ describe('UserService', () => {
   let service: UserService;
 
   jest.spyOn(User, 'find').mockResolvedValue([]);
+  jest.spyOn(User, 'findOneByOrFail').mockResolvedValue(new User());
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -28,5 +29,15 @@ describe('UserService', () => {
     };
 
     expect(await service.findAll()).toEqual(result);
+  });
+
+  it('should return user', async () => {
+    const result = {
+      isSuccess: expect.any(Boolean),
+      message: expect.any(String),
+      user: {},
+    };
+
+    expect(await service.findOne('abc')).toEqual(result);
   });
 });
