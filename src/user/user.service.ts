@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import {
   DefaultResponse,
   RolesEnum,
-  EditedUserData,
   FilteredUser,
   FindUserResponse,
   FindUsersResponse,
@@ -65,7 +64,7 @@ export class UserService {
 
   async update(
     id: string,
-    { email, password, permissions }: EditedUserData,
+    { email, password, permissions }: UserBasicData,
   ): Promise<FindUserResponse> {
     try {
       const user = await User.findOneByOrFail({ id });
