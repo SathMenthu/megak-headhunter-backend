@@ -7,14 +7,13 @@ import {
   Delete,
   Post,
 } from '@nestjs/common';
-import { UserService } from './user.service';
 import {
   DefaultResponse,
-  EditedUserData,
   FindUserResponse,
   FindUsersResponse,
   UserBasicData,
-} from '../types/interfaces';
+} from 'types';
+import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
@@ -39,7 +38,7 @@ export class UserController {
   @Patch('/:id')
   update(
     @Param('id') id: string,
-    @Body() editedUserData: EditedUserData,
+    @Body() editedUserData: UserBasicData,
   ): Promise<FindUserResponse> {
     return this.userService.update(id, editedUserData);
   }

@@ -1,15 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { User } from './entities/user.entity';
 import {
-  EditedUserData,
+  DefaultResponse,
+  RolesEnum,
   FilteredUser,
   FindUserResponse,
   FindUsersResponse,
   UserBasicData,
-} from '../types/interfaces/user';
+} from 'types';
+import { User } from './entities/user.entity';
 import { UtilitiesService } from '../utilities/utilities.service';
-import { DefaultResponse } from '../types/interfaces';
-import { RolesEnum } from '../types';
 
 @Injectable()
 export class UserService {
@@ -65,7 +64,7 @@ export class UserService {
 
   async update(
     id: string,
-    { email, password, permissions }: EditedUserData,
+    { email, password, permissions }: UserBasicData,
   ): Promise<FindUserResponse> {
     try {
       const user = await User.findOneByOrFail({ id });
