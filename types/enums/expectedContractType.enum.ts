@@ -1,6 +1,6 @@
 export enum ExpectedContractTypeEnum {
-  'only employment contract',
-  'possible B2B',
-  'possible mandate contract/contract work',
-  'no preferences',
+  'ONLY EMPLOYMENT CONTRACT' = 'ONLY EMPLOYMENT CONTRACT',
+  'POSSIBLE B2B' = 'POSSIBLE B2B',
+  'POSSIBLE MANDATE CONTRACT/CONTRACT WORK' = 'POSSIBLE MANDATE CONTRACT/CONTRACT WORK',
+  'NO PREFERENCES' = 'NO PREFERENCES',
 }

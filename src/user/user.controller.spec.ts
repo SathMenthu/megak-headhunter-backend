@@ -37,7 +37,7 @@ describe('UserController', () => {
         user: {
           id,
           email: 'abc@example.com',
-          permissions: [RolesEnum.STUDENT],
+          permissions: RolesEnum.STUDENT,
         },
       }),
     ),
@@ -65,7 +65,7 @@ describe('UserController', () => {
   const user = {
     email: 'test@example.com',
     password: 'test',
-    permissions: [RolesEnum.STUDENT],
+    permissions: RolesEnum.STUDENT,
   };
 
   beforeEach(async () => {
@@ -134,7 +134,7 @@ describe('UserController', () => {
       user: {
         id: expect.any(String),
         email: expect.any(String),
-        permissions: [RolesEnum.STUDENT],
+        permissions: RolesEnum.STUDENT,
       },
     };
 
@@ -142,7 +142,7 @@ describe('UserController', () => {
       id: 'abc',
       email: 'test@example.com',
       password: 'test_pwd',
-      permissions: [RolesEnum.STUDENT],
+      permissions: RolesEnum.STUDENT,
     };
 
     expect(controller.update('abc', dto)).toEqual(result);

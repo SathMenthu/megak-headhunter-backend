@@ -6,6 +6,7 @@ import {
   FindUserResponse,
   FindUsersResponse,
   UserBasicData,
+  ExpectedTypeWorkEnum,
 } from 'types';
 import { User } from './entities/user.entity';
 import { UtilitiesService } from '../utilities/utilities.service';
@@ -116,9 +117,7 @@ export class UserService {
         const newUser = new User();
         newUser.email = email;
         newUser.password = this.utilitiesService.hashPassword(password);
-        newUser.permissions = permissions
-          ? [RolesEnum.STUDENT, ...permissions]
-          : [RolesEnum.STUDENT];
+        newUser.permissions = permissions;
         await newUser.save();
         const filtratedUser = this.userFilter(newUser);
         return {

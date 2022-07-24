@@ -1,7 +1,7 @@
 export enum ExpectedTypeWorkEnum {
-  'at location',
-  'willingness to relocate',
-  'only remotely',
-  'hybrid',
-  'irrelevant',
+  'AT LOCATION' = 'AT LOCATION',
+  'WILLINGNESS TO RELOCATE' = 'WILLINGNESS TO RELOCATE',
+  'ONLY REMOTELY' = 'ONLY REMOTELY',
+  'HYBRID' = 'HYBRID',
+  'IRRELEVANT' = 'IRRELEVANT',
 }

@@ -5,7 +5,7 @@ export interface UserBasicData {
   id: string;
   email: string;
   password: string;
-  permissions: RolesEnum[];
+  permissions: RolesEnum;
 }
 
 export type FilteredUser = Omit<UserBasicData, 'password'>;

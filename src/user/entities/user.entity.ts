@@ -5,9 +5,11 @@ import {
   UserBasicData,
 } from 'types';
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { StudentStatus } from '../../../types/enums/student.status.enum';
 
 @Entity()
 export class User extends BaseEntity implements UserBasicData {
+  // All Users Variables
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -22,10 +24,10 @@ export class User extends BaseEntity implements UserBasicData {
   password: string;
 
   @Column({
-    type: 'set',
+    type: 'enum',
     enum: RolesEnum,
   })
-  permissions: RolesEnum[];
+  permissions: RolesEnum;
 
   @Column({ nullable: true })
   activeTokenId: string | null;
@@ -34,164 +36,166 @@ export class User extends BaseEntity implements UserBasicData {
   createdAt: string = Date.now().toLocaleString();
 
   @Column({
-    type: 'varchar',
-    length: 21,
+    length: 50,
     nullable: false,
   })
   firstName: string;
 
   @Column({
-    type: 'varchar',
-    length: 51,
+    length: 50,
     nullable: false,
   })
   lastName: string;
 
   @Column({
-    type: 'varchar',
-    length: 73,
-    nullable: false,
-  })
-  fullName: string;
-
-  @Column({
-    type: 'text',
     default:
       'https://www.deviantart.com/karmaanddestiny/art/Default-user-icon-4-858661084 ',
+    length: 255,
   })
   avatar: string;
 
+  // ONLY HR VARIABLES
+
   @Column({
-    type: 'varchar',
-    length: 50,
-    nullable: false,
+    length: 100,
+    nullable: true,
   })
-  company: string;
+  company: string | null;
+
+  @Column({
+    precision: 3,
+    nullable: true,
+  })
+  maxReservedStudents: number | null;
+
+  // ONLY USER VARIABLES
+
+  @Column({ type: 'datetime', nullable: true, default: null })
+  reservationEndDate: string | null;
+
+  @Column({
+    type: 'enum',
+    enum: StudentStatus,
+    nullable: true,
+    default: null,
+  })
+  studentStatus: StudentStatus | null;
+
+  @Column({ precision: 9, nullable: true })
+  phoneNumber: number | null;
 
   @Column({
     unique: true,
     type: 'varchar',
     length: 39,
+    nullable: true,
   })
-  githubUsername: string;
+  githubUsername: string | null;
 
   @Column({
     type: 'text',
+    nullable: true,
   })
-  portfolioUrls: string[];
+  portfolioUrls: string[] | null;
 
   @Column({
     type: 'text',
+    nullable: true,
   })
-  projectUrls: string[];
+  projectUrls: string[] | null;
 
   @Column({
     type: 'text',
     nullable: true,
     default: null,
   })
-  bio: string;
+  bio: string | null;
 
   @Column({
     type: 'enum',
     enum: ExpectedTypeWorkEnum,
-    default: '4',
+    nullable: true,
   })
-  expectedTypeWork: string;
+  expectedTypeWork: ExpectedTypeWorkEnum | null;
 
   @Column({
-    type: 'varchar',
     length: 60,
+    nullable: true,
   })
-  targetWorkCity: string;
+  targetWorkCity: string | null;
 
   @Column({
     type: 'enum',
     enum: ExpectedContractTypeEnum,
-    default: '3',
+    nullable: true,
   })
-  expectedContractType: string;
+  expectedContractType: ExpectedContractTypeEnum | null;
 
   @Column({
     type: 'float',
-    default: 0,
     precision: 7,
     scale: 2,
+    nullable: true,
   })
-  expectedSalary: number;
+  expectedSalary: number | null;
 
   @Column({
     type: 'boolean',
-    default: false,
+    nullable: true,
   })
-  canTakeApprenticeship: boolean;
+  canTakeApprenticeship: boolean | null;
 
   @Column({
-    type: 'int',
     nullable: true,
     precision: 2,
-    default: 0,
   })
-  monthsOfCommercialExp: number;
-
-  @Column({
-    type: 'longtext',
-    nullable: true,
-    default: null,
-  })
-  education: string;
-
-  @Column({
-    type: 'longtext',
-    nullable: true,
-    default: null,
-  })
-  workExperience: string;
-
-  @Column({
-    type: 'longtext',
-    nullable: true,
-    default: null,
-  })
-  courses: string;
+  monthsOfCommercialExp: number | null;
 
   @Column({
     type: 'text',
+    nullable: true,
   })
-  studentStatus: string;
-
-  @Column({
-    type: 'int',
-    precision: 3,
-  })
-  maxReservedStudents: number;
-
-  @Column({
-    type: 'int',
-    precision: 1,
-  })
-  courseCompletion: number;
-
-  @Column({
-    type: 'int',
-    precision: 1,
-  })
-  courseEngagement: number;
-
-  @Column({
-    type: 'int',
-    precision: 1,
-  })
-  projectDegree: number;
-
-  @Column({
-    type: 'int',
-    precision: 1,
-  })
-  teamProjectDegree: number;
+  education: string | null;
 
   @Column({
     type: 'text',
+    nullable: true,
   })
-  bonusProjectUrls: string[];
+  workExperience: string | null;
+
+  @Column({
+    type: 'text',
+    nullable: true,
+  })
+  courses: string | null;
+
+  @Column({
+    precision: 1,
+    nullable: true,
+  })
+  courseCompletion: number | null;
+
+  @Column({
+    precision: 1,
+    nullable: true,
+  })
+  courseEngagement: number | null;
+
+  @Column({
+    precision: 1,
+    nullable: true,
+  })
+  projectDegree: number | null;
+
+  @Column({
+    precision: 1,
+    nullable: true,
+  })
+  teamProjectDegree: number | null;
+
+  @Column({
+    type: 'text',
+    nullable: true,
+  })
+  bonusProjectUrls: string[] | null;
 }
