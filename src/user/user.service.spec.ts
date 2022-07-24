@@ -23,7 +23,7 @@ describe('UserService', () => {
 
   it('should return users list', async () => {
     const result = {
-      isSuccess: expect.any(Boolean),
+      isSuccess: true,
       message: expect.any(String),
       users: expect.any(Array),
     };
@@ -33,7 +33,7 @@ describe('UserService', () => {
 
   it('should return user', async () => {
     const result = {
-      isSuccess: expect.any(Boolean),
+      isSuccess: true,
       message: expect.any(String),
       user: {},
     };
