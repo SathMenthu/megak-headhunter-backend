@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { v4 as uuid } from 'uuid';
 import { UserService } from './user.service';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { User } from './entities/user.entity';
@@ -112,6 +113,50 @@ describe('UserService', () => {
       };
 
       expect(await service.remove('abc')).toEqual(result);
+    });
+  });
+
+  describe('create', () => {
+    const dto = {
+      email: 'example@test.com',
+      password: 'test',
+      permissions: [RolesEnum.STUDENT],
+    };
+
+    it('should handle error', async () => {
+      expect(await service.create(dto)).toEqual(errorResponse);
+    });
+
+    it('should detect email in use', async () => {
+      jest.spyOn(User.prototype, 'save').mockResolvedValue(new User());
+      jest.spyOn(User, 'findOneBy').mockResolvedValue(new User());
+
+      const result = {
+        isSuccess: false,
+        message: 'E-mail address is in use.',
+      };
+
+      expect(await service.create(dto)).toEqual(result);
+    });
+
+    it('should add user', async () => {
+      jest.spyOn(User.prototype, 'save').mockImplementation(() => {
+        User.prototype.id = uuid();
+        return this;
+      });
+      jest.spyOn(User, 'findOneBy').mockResolvedValue(null);
+
+      const result = {
+        isSuccess: true,
+        message: expect.any(String),
+        user: {
+          id: expect.any(String),
+          email: expect.any(String),
+          permissions: expect.any(Array),
+        },
+      };
+
+      expect(await service.create(dto)).toEqual(result);
     });
   });
 });
