@@ -14,6 +14,11 @@ describe('UserService', () => {
     permissions: [RolesEnum.STUDENT],
   };
 
+  const errorResponse = {
+    isSuccess: false,
+    message: expect.any(String),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [UserService, UtilitiesService],
@@ -28,12 +33,7 @@ describe('UserService', () => {
 
   describe('findAll', () => {
     it('should handle error', async () => {
-      const result = {
-        isSuccess: false,
-        message: expect.any(String),
-      };
-
-      expect(await service.findAll()).toEqual(result);
+      expect(await service.findAll()).toEqual(errorResponse);
     });
 
     it('should return users list', async () => {
@@ -51,12 +51,7 @@ describe('UserService', () => {
 
   describe('findOne', () => {
     it('should handle error', async () => {
-      const result = {
-        isSuccess: false,
-        message: expect.any(String),
-      };
-
-      expect(await service.findOne('abc')).toEqual(result);
+      expect(await service.findOne('abc')).toEqual(errorResponse);
     });
 
     it('should return user', async () => {
@@ -74,12 +69,7 @@ describe('UserService', () => {
 
   describe('update', () => {
     it('should handle error', async () => {
-      const result = {
-        isSuccess: false,
-        message: expect.any(String),
-      };
-
-      expect(await service.update('abc', testUserObj)).toEqual(result);
+      expect(await service.update('abc', testUserObj)).toEqual(errorResponse);
     });
 
     it('should update user data', async () => {
