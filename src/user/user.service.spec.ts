@@ -94,4 +94,24 @@ describe('UserService', () => {
       expect(await service.update('abc', testUserObj)).toEqual(result);
     });
   });
+
+  describe('remove', () => {
+    it('should handle error', async () => {
+      expect(await service.remove('abc')).toEqual(errorResponse);
+    });
+
+    it('should remove user', async () => {
+      jest.spyOn(User, 'delete').mockResolvedValue({
+        affected: 1,
+        raw: {},
+      });
+
+      const result = {
+        isSuccess: true,
+        message: expect.any(String),
+      };
+
+      expect(await service.remove('abc')).toEqual(result);
+    });
+  });
 });
