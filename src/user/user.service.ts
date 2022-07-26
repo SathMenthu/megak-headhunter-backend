@@ -7,7 +7,9 @@ import {
   FindUsersResponse,
   UserBasicData,
   ExpectedTypeWorkEnum,
+  ImportedStudentData,
 } from 'types';
+import * as Papa from 'papaparse';
 import { User } from './entities/user.entity';
 import { UtilitiesService } from '../utilities/utilities.service';
 
@@ -134,8 +136,52 @@ export class UserService {
     }
   }
 
-  async addManyStudents(file: string): Promise<string> {
-    console.log(file, 'storageDir()');
-    return file;
+  async addManyStudents(file): Promise<boolean> {
+    try {
+      const { data } = Papa.parse(file, {
+        header: true,
+        transform(
+          value: string,
+          field: string | number,
+        ): string[] | number | string {
+          // Transforming string into array of strings
+          if (field === 'bonusProjectUrls') {
+            if (value) {
+              const arrayOfUrls = value.split(',');
+              const regex =
+                /((git|ssh|http(s)?)|(git@[\w.]+))(:(\/\/)?)([\w.@:/\-~]+)/;
+
+              // filtering if url fits to gitUrl standards
+              return arrayOfUrls.filter(gitUrl => regex.test(gitUrl));
+            }
+          } else if (field === 'email') {
+            // Checking if we have an email here
+            const regex = /\S+@\S+\.\S+/;
+            return regex.test(value) ? value : null;
+          } else if (
+            Number(value) <= 5 &&
+            Number(value) >= 0 &&
+            Number.isInteger(Number(value))
+          ) {
+            // If we can make a number from value , we're doing it
+            // while parsing, we're not using dynamicTyping, which would have to parse thru list again.
+            return Number(value);
+          }
+          return null;
+        },
+      });
+      const filteredData = data.filter(student => {
+        const values = Object.values(student);
+        // If we have null anywhere, that means the record is not good
+        return !values.includes(null);
+      }) as ImportedStudentData[];
+
+      // @TODO walidation is OK, now I have to create students check if there is an email in db, and store it.
+
+      return true;
+    } catch (e) {
+      console.log(e);
+      return false;
+    }
   }
 }

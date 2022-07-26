@@ -24,11 +24,11 @@ export class UserController {
 
   @Post('/add-many-students')
   @UseInterceptors(FileInterceptor('file'))
-  addManyStudents(@UploadedFile() file: Express.Multer.File): Promise<string> {
+  addManyStudents(@UploadedFile() file: Express.Multer.File): Promise<boolean> {
     return this.userService.addManyStudents(file.buffer.toString());
   }
 
-  // @TODO delete in future, just for tests (later will import users from .csv)
+  // @TODO delete in future, just for tests (later will import users from .csv), you could try to use it for HR users
   @Post('/')
   create(@Body() user: Omit<UserBasicData, 'id'>): Promise<FindUsersResponse> {
     return this.userService.create(user);
