@@ -12,7 +12,7 @@ describe('UserService', () => {
     id: 'abc',
     email: 'example@test.com',
     password: 'test',
-    permissions: [RolesEnum.STUDENT],
+    permissions: RolesEnum.STUDENT,
   };
 
   const errorResponse = {
@@ -79,7 +79,7 @@ describe('UserService', () => {
       jest.spyOn(service, 'userFilter').mockReturnValue({
         id: 'abc',
         email: 'example@test.com',
-        permissions: [RolesEnum.STUDENT],
+        permissions: RolesEnum.STUDENT,
       });
 
       const result = {
@@ -88,7 +88,7 @@ describe('UserService', () => {
         user: {
           id: expect.any(String),
           email: expect.any(String),
-          permissions: [RolesEnum.STUDENT],
+          permissions: RolesEnum.STUDENT,
         },
       };
 
@@ -120,7 +120,7 @@ describe('UserService', () => {
     const dto = {
       email: 'example@test.com',
       password: 'test',
-      permissions: [RolesEnum.STUDENT],
+      permissions: RolesEnum.STUDENT,
     };
 
     it('should handle error', async () => {
@@ -152,7 +152,7 @@ describe('UserService', () => {
         user: {
           id: expect.any(String),
           email: expect.any(String),
-          permissions: expect.any(Array),
+          permissions: RolesEnum.STUDENT,
         },
       };
 
