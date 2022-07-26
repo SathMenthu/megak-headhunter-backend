@@ -133,4 +133,9 @@ export class UserService {
       };
     }
   }
+
+  async addManyStudents(file: string): Promise<string> {
+    console.log(file, 'storageDir()');
+    return file;
+  }
 }
