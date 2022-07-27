@@ -14,6 +14,8 @@ import {
   UserBasicData,
 } from 'types';
 import { UserService } from './user.service';
+import { User } from './entities/user.entity';
+import { StudentBasicData } from '../../types/interfaces/user/student';
 
 @Controller('user')
 export class UserController {
@@ -41,6 +43,17 @@ export class UserController {
     @Body() editedUserData: UserBasicData,
   ): Promise<FindUserResponse> {
     return this.userService.update(id, editedUserData);
+  }
+
+  @Patch('/register/:id')
+  async registerStudent(
+    @Param('id') id: string,
+    @Body() studentData: Partial<StudentBasicData>,
+  ): Promise<DefaultResponse> {
+    const foundedStudent = await User.findOneBy({ activationLink: id });
+    return foundedStudent
+      ? this.userService.registerStudent(foundedStudent, studentData)
+      : { isSuccess: false, message: 'Link is no longer active' };
   }
 
   @Delete('/:id')
