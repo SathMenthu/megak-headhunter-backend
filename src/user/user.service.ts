@@ -1,15 +1,15 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
   DefaultResponse,
-  RolesEnum,
   FilteredUser,
   FindUserResponse,
   FindUsersResponse,
-  UserBasicData,
-  ExpectedTypeWorkEnum,
   ImportedStudentData,
+  RolesEnum,
+  UserBasicData,
 } from 'types';
 import * as Papa from 'papaparse';
+import { v4 as uuid } from 'uuid';
 import { User } from './entities/user.entity';
 import { UtilitiesService } from '../utilities/utilities.service';
 
@@ -136,6 +136,36 @@ export class UserService {
     }
   }
 
+  static async checkAndAddStudent(studentObj: ImportedStudentData) {
+    try {
+      const foundUser = await User.findOneBy({ email: studentObj.email });
+
+      if (!foundUser) {
+        const newStudent = new User();
+
+        newStudent.id = uuid();
+        newStudent.permissions = RolesEnum.STUDENT;
+        newStudent.email = studentObj.email;
+        newStudent.courseCompletion = studentObj.courseCompletion;
+        newStudent.courseEngagement = studentObj.courseEngagement;
+        newStudent.projectDegree = studentObj.projectDegree;
+        newStudent.teamProjectDegree = studentObj.teamProjectDegree;
+        newStudent.bonusProjectUrls =
+          studentObj.bonusProjectUrls.length > 0
+            ? (studentObj.bonusProjectUrls as string[]).join(',')
+            : newStudent.bonusProjectUrls;
+        newStudent.registerToken = uuid();
+
+        await newStudent.save();
+        return;
+      }
+      throw new Error('Student with this email is already in DataBase.');
+    } catch (e) {
+      console.error(e.message);
+      throw new Error('New Student could not be added to DataBase.');
+    }
+  }
+
   async addManyStudents(file): Promise<boolean> {
     try {
       const { data } = Papa.parse(file, {
@@ -167,16 +197,23 @@ export class UserService {
             // while parsing, we're not using dynamicTyping, which would have to parse thru list again.
             return Number(value);
           }
+          // in any other case the value will be null
           return null;
         },
       });
-      const filteredData = data.filter(student => {
+      const filteredStudents = data.filter(student => {
         const values = Object.values(student);
         // If we have null anywhere, that means the record is not good
         return !values.includes(null);
       }) as ImportedStudentData[];
 
-      // @TODO walidation is OK, now I have to create students check if there is an email in db, and store it.
+      filteredStudents.map(async student => {
+        try {
+          await UserService.checkAndAddStudent(student);
+        } catch (e) {
+          console.error(e.message);
+        }
+      });
 
       return true;
     } catch (e) {

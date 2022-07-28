@@ -194,8 +194,15 @@ export class User extends BaseEntity implements UserBasicData {
   teamProjectDegree: number | null;
 
   @Column({
+    type: 'varchar',
+    length: 36,
+    nullable: true,
+  })
+  registerToken: string | null;
+
+  @Column({
     type: 'text',
     nullable: true,
   })
-  bonusProjectUrls: string[] | null;
+  bonusProjectUrls: string | string[] | null;
 }
