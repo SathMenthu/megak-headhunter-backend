@@ -11,6 +11,7 @@ import {
 } from 'types';
 import * as Papa from 'papaparse';
 import { v4 as uuid } from 'uuid';
+import { createEmailContent } from 'src/templates/email/email';
 import { User } from './entities/user.entity';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { mainConfigInfo, papaParseConfig } from '../../config/config';
@@ -270,12 +271,12 @@ export class UserService {
     }
   }
 
-  private async sendInvitationEmail(studentEmail: string[]) {
+  private async sendInvitationEmail(studentData: string[]) {
     try {
       await this.mailService.sendMail(
-        studentEmail[1],
-        'Very well',
-        'You are in!',
+        studentData[1],
+        `Account created for ${studentData[1]}`,
+        createEmailContent(studentData),
       );
     } catch (e) {
       console.error(e.message);
