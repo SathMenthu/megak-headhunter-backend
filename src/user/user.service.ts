@@ -13,13 +13,15 @@ import * as Papa from 'papaparse';
 import { v4 as uuid } from 'uuid';
 import { User } from './entities/user.entity';
 import { UtilitiesService } from '../utilities/utilities.service';
-import { yourDomainName } from '../../config/config';
+import { mainConfigInfo, papaParseConfig } from '../../config/config';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @Inject(UtilitiesService)
     private readonly utilitiesService: UtilitiesService,
+    @Inject(MailService) private mailService: MailService,
   ) {}
 
   userFilter(user: User): FilteredUser {
@@ -102,7 +104,7 @@ export class UserService {
     studentData: MinimalInformationToCreateEmail,
   ): string[] {
     return [
-      `${yourDomainName}/${studentData.id}/${studentData.registerToken}`,
+      `${mainConfigInfo.yourDomainName}/${studentData.id}/${studentData.registerToken}`,
       studentData.email,
     ];
   }
@@ -217,6 +219,7 @@ export class UserService {
     try {
       const { data } = Papa.parse(file, {
         header: true,
+        preview: papaParseConfig.maxNumberOfLinesParsed,
         transform(
           value: string,
           field: string | number,
@@ -250,10 +253,32 @@ export class UserService {
         UserService.createUrlsSentToStudents(student),
       );
 
+      await Promise.all(
+        generatedUrlsToRegisterWithEmails.map(async oneStudent => {
+          try {
+            return await this.sendInvitationEmail(oneStudent);
+          } catch (e) {
+            console.error(e.message);
+            return null;
+          }
+        }),
+      );
       return true;
     } catch (e) {
       console.error(e);
       return false;
+    }
+  }
+
+  private async sendInvitationEmail(studentEmail: string[]) {
+    try {
+      await this.mailService.sendMail(
+        studentEmail[1],
+        'Very well',
+        'You are in!',
+      );
+    } catch (e) {
+      console.error(e.message);
     }
   }
 }
