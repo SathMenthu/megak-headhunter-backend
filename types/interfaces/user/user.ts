@@ -28,6 +28,12 @@ export interface ImportedStudentData {
   registerToken: string;
 }
 
+export interface MinimalInformationToCreateEmail {
+  id: string;
+  email: string;
+  registerToken: string;
+}
+
 export interface EditedUserData
   extends Omit<UserBasicData, 'id'>,
     DefaultResponse {}

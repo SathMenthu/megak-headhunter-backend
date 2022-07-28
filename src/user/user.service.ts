@@ -5,6 +5,7 @@ import {
   FindUserResponse,
   FindUsersResponse,
   ImportedStudentData,
+  MinimalInformationToCreateEmail,
   RolesEnum,
   UserBasicData,
 } from 'types';
@@ -12,6 +13,7 @@ import * as Papa from 'papaparse';
 import { v4 as uuid } from 'uuid';
 import { User } from './entities/user.entity';
 import { UtilitiesService } from '../utilities/utilities.service';
+import { yourDomainName } from '../../config/config';
 
 @Injectable()
 export class UserService {
@@ -28,6 +30,81 @@ export class UserService {
       email,
       permissions,
     };
+  }
+
+  private static async checkAndAddStudent(
+    studentObj: ImportedStudentData,
+  ): Promise<MinimalInformationToCreateEmail | null> {
+    try {
+      const foundUser = await User.findOneBy({ email: studentObj.email });
+
+      if (!foundUser) {
+        const newStudent = new User();
+
+        newStudent.id = uuid();
+        newStudent.permissions = RolesEnum.STUDENT;
+        newStudent.email = studentObj.email;
+        newStudent.courseCompletion = studentObj.courseCompletion;
+        newStudent.courseEngagement = studentObj.courseEngagement;
+        newStudent.projectDegree = studentObj.projectDegree;
+        newStudent.teamProjectDegree = studentObj.teamProjectDegree;
+        newStudent.bonusProjectUrls =
+          studentObj.bonusProjectUrls.length > 0
+            ? (studentObj.bonusProjectUrls as string[]).join(',')
+            : newStudent.bonusProjectUrls;
+        newStudent.registerToken = uuid();
+
+        await newStudent.save();
+
+        return {
+          id: newStudent.id,
+          email: newStudent.email,
+          registerToken: newStudent.registerToken,
+        };
+      }
+      return null;
+    } catch (e) {
+      console.error(e.message);
+      return null;
+    }
+  }
+
+  private static validateDataWhileParsing(validatedObject) {
+    const { value, field } = validatedObject;
+    // Transforming string into array of strings
+    if (field === 'bonusProjectUrls') {
+      if (value) {
+        const arrayOfUrls = value.split(',');
+        const regex =
+          /((git|ssh|http(s)?)|(git@[\w.]+))(:(\/\/)?)([\w.@:/\-~]+)/;
+
+        // filtering if url fits to gitUrl standards
+        return arrayOfUrls.filter(gitUrl => regex.test(gitUrl));
+      }
+    } else if (field === 'email') {
+      // Checking if we have an email here
+      const regex = /\S+@\S+\.\S+/;
+      return regex.test(value) ? value : null;
+    } else if (
+      Number(value) <= 5 &&
+      Number(value) >= 0 &&
+      Number.isInteger(Number(value))
+    ) {
+      // If we can make a number from value , we're doing it
+      // while parsing, we're not using dynamicTyping, which would have to parse thru list again.
+      return Number(value);
+    }
+    // in any other case the value will be null
+    return null;
+  }
+
+  private static createUrlsSentToStudents(
+    studentData: MinimalInformationToCreateEmail,
+  ): string[] {
+    return [
+      `${yourDomainName}/${studentData.id}/${studentData.registerToken}`,
+      studentData.email,
+    ];
   }
 
   async findAll(): Promise<FindUsersResponse> {
@@ -136,36 +213,6 @@ export class UserService {
     }
   }
 
-  static async checkAndAddStudent(studentObj: ImportedStudentData) {
-    try {
-      const foundUser = await User.findOneBy({ email: studentObj.email });
-
-      if (!foundUser) {
-        const newStudent = new User();
-
-        newStudent.id = uuid();
-        newStudent.permissions = RolesEnum.STUDENT;
-        newStudent.email = studentObj.email;
-        newStudent.courseCompletion = studentObj.courseCompletion;
-        newStudent.courseEngagement = studentObj.courseEngagement;
-        newStudent.projectDegree = studentObj.projectDegree;
-        newStudent.teamProjectDegree = studentObj.teamProjectDegree;
-        newStudent.bonusProjectUrls =
-          studentObj.bonusProjectUrls.length > 0
-            ? (studentObj.bonusProjectUrls as string[]).join(',')
-            : newStudent.bonusProjectUrls;
-        newStudent.registerToken = uuid();
-
-        await newStudent.save();
-        return;
-      }
-      throw new Error('Student with this email is already in DataBase.');
-    } catch (e) {
-      console.error(e.message);
-      throw new Error('New Student could not be added to DataBase.');
-    }
-  }
-
   async addManyStudents(file): Promise<boolean> {
     try {
       const { data } = Papa.parse(file, {
@@ -174,31 +221,10 @@ export class UserService {
           value: string,
           field: string | number,
         ): string[] | number | string {
-          // Transforming string into array of strings
-          if (field === 'bonusProjectUrls') {
-            if (value) {
-              const arrayOfUrls = value.split(',');
-              const regex =
-                /((git|ssh|http(s)?)|(git@[\w.]+))(:(\/\/)?)([\w.@:/\-~]+)/;
-
-              // filtering if url fits to gitUrl standards
-              return arrayOfUrls.filter(gitUrl => regex.test(gitUrl));
-            }
-          } else if (field === 'email') {
-            // Checking if we have an email here
-            const regex = /\S+@\S+\.\S+/;
-            return regex.test(value) ? value : null;
-          } else if (
-            Number(value) <= 5 &&
-            Number(value) >= 0 &&
-            Number.isInteger(Number(value))
-          ) {
-            // If we can make a number from value , we're doing it
-            // while parsing, we're not using dynamicTyping, which would have to parse thru list again.
-            return Number(value);
-          }
-          // in any other case the value will be null
-          return null;
+          return UserService.validateDataWhileParsing({
+            value,
+            field,
+          });
         },
       });
       const filteredStudents = data.filter(student => {
@@ -207,17 +233,26 @@ export class UserService {
         return !values.includes(null);
       }) as ImportedStudentData[];
 
-      filteredStudents.map(async student => {
-        try {
-          await UserService.checkAndAddStudent(student);
-        } catch (e) {
-          console.error(e.message);
-        }
-      });
+      const studentsAddedToDb = (
+        await Promise.all(
+          filteredStudents.map(async student => {
+            try {
+              return await UserService.checkAndAddStudent(student);
+            } catch (e) {
+              console.error(e.message);
+              return null;
+            }
+          }),
+        )
+      ).filter(student => student !== null);
+
+      const generatedUrlsToRegisterWithEmails = studentsAddedToDb.map(student =>
+        UserService.createUrlsSentToStudents(student),
+      );
 
       return true;
     } catch (e) {
-      console.log(e);
+      console.error(e);
       return false;
     }
   }

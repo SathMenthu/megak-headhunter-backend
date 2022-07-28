@@ -32,3 +32,5 @@ export const secretConfig = {
   HASH_SECRET_KEY: 'secret',
   TOKEN_SECRET: 'secret',
 };
+
+export const yourDomainName = 'YOUR_DOMAIN_NAME';
