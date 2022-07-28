@@ -1,7 +1,7 @@
 import {
   ExpectedContractTypeEnum,
   ExpectedTypeWorkEnum,
-  RolesEnum,
+  RoleEnum,
   UserBasicData,
 } from 'types';
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
@@ -24,18 +24,6 @@ export class User extends BaseEntity implements UserBasicData {
   password: string;
 
   @Column({
-    type: 'enum',
-    enum: RolesEnum,
-  })
-  permissions: RolesEnum;
-
-  @Column({ nullable: true })
-  activeTokenId: string | null;
-
-  @Column({ type: 'timestamp' })
-  createdAt: string = Date.now().toLocaleString();
-
-  @Column({
     length: 50,
     nullable: false,
   })
@@ -46,6 +34,18 @@ export class User extends BaseEntity implements UserBasicData {
     nullable: false,
   })
   lastName: string;
+
+  @Column({
+    type: 'enum',
+    enum: RoleEnum,
+  })
+  permissions: RoleEnum;
+
+  @Column({ nullable: true })
+  activeTokenId: string | null;
+
+  @Column({ type: 'timestamp' })
+  createdAt: string = Date.now().toLocaleString();
 
   @Column({
     default:
@@ -93,13 +93,13 @@ export class User extends BaseEntity implements UserBasicData {
   githubUsername: string | null;
 
   @Column({
-    type: 'text',
+    type: 'simple-array',
     nullable: true,
   })
   portfolioUrls: string[] | null;
 
   @Column({
-    type: 'text',
+    type: 'simple-array',
     nullable: true,
   })
   projectUrls: string[] | null;
@@ -147,7 +147,7 @@ export class User extends BaseEntity implements UserBasicData {
 
   @Column({
     nullable: true,
-    precision: 2,
+    precision: 3,
   })
   monthsOfCommercialExp: number | null;
 
@@ -194,8 +194,14 @@ export class User extends BaseEntity implements UserBasicData {
   teamProjectDegree: number | null;
 
   @Column({
-    type: 'text',
+    type: 'simple-array',
     nullable: true,
   })
   bonusProjectUrls: string[] | null;
+
+  @Column({
+    length: 36,
+    unique: true,
+  })
+  activationLink: string | null;
 }

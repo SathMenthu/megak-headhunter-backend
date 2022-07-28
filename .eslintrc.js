@@ -34,5 +34,6 @@ module.exports = {
     'no-extra-boolean-cast': 'off',
     'no-param-reassign': 'off',
     'no-else-return': 'off',
+    'prefer-regex-literals': 'off',
   },
 };
