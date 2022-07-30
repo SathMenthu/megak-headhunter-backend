@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 import { UserService } from './user.service';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { User } from './entities/user.entity';
-import { RolesEnum } from '../../types';
+import { RoleEnum } from '../../types';
 
 describe('UserService', () => {
   let service: UserService;
@@ -12,7 +12,7 @@ describe('UserService', () => {
     id: 'abc',
     email: 'example@test.com',
     password: 'test',
-    permissions: RolesEnum.STUDENT,
+    permissions: RoleEnum.STUDENT,
   };
 
   const errorResponse = {
@@ -79,7 +79,7 @@ describe('UserService', () => {
       jest.spyOn(service, 'userFilter').mockReturnValue({
         id: 'abc',
         email: 'example@test.com',
-        permissions: RolesEnum.STUDENT,
+        permissions: RoleEnum.STUDENT,
       });
 
       const result = {
@@ -88,7 +88,7 @@ describe('UserService', () => {
         user: {
           id: expect.any(String),
           email: expect.any(String),
-          permissions: RolesEnum.STUDENT,
+          permissions: RoleEnum.STUDENT,
         },
       };
 
@@ -120,7 +120,7 @@ describe('UserService', () => {
     const dto = {
       email: 'example@test.com',
       password: 'test',
-      permissions: RolesEnum.STUDENT,
+      permissions: RoleEnum.STUDENT,
     };
 
     it('should handle error', async () => {
@@ -152,7 +152,7 @@ describe('UserService', () => {
         user: {
           id: expect.any(String),
           email: expect.any(String),
-          permissions: RolesEnum.STUDENT,
+          permissions: RoleEnum.STUDENT,
         },
       };
 
