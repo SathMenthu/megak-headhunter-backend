@@ -1,11 +1,13 @@
-import { RolesEnum } from '../../enums';
+import { RoleEnum } from '../../enums';
 import { DefaultResponse } from '../global';
 
 export interface UserBasicData {
   id: string;
   email: string;
   password: string;
-  permissions: RolesEnum;
+  firstName: string;
+  lastName: string;
+  permissions: RoleEnum;
 }
 
 export type FilteredUser = Omit<UserBasicData, 'password'>;

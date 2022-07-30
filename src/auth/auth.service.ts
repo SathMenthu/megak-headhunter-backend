@@ -115,6 +115,6 @@ export class AuthService {
   // Service for valid user auth
 
   async me(user: User) {
-    return this.userService.userFilter(user);
+    return this.userService.baseUserFilter(user);
   }
 }

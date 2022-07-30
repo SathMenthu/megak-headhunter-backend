@@ -83,4 +83,43 @@ $ npm run test:cov
 ```
 
 
+#### Import Students
+```bash
+  @POST
+  '/add-many-students' - import many students using by ADMIN with CSV file
+```
+##### Requirements for CSV file
+The file should have Header fields named 
+- email
 
+This should be a valid email address
+- courseCompletion
+
+This should be a number between 0 and 5 both included
+- courseEngagement
+
+This should be a number between 0 and 5 both included
+- projectDegree
+
+This should be a number between 0 and 5 both included
+- teamProjectDegree
+
+This should be a number between 0 and 5 both included
+- bonusProjectUrls
+
+This should be valid github URLs leading to project from stage 7 of MegaK separated by comma, example of array: 
+
+```https://github.com/SathMenthu/megak-headhunter-backend,https://github.com/iwomipl/Movie-Wars-Front```
+
+- Separator for CSV file should be semicolon;
+
+Example of CSV file Should look like this:
+```bash
+email;courseCompletion;courseEngagement;projectDegree;teamProjectDegree;bonusProjectUrls
+a@be.c;1;1;1;1;https://github.com/SathMenthu/megak-headhunter-backend
+b@c.d;5;4;0;2;https://github.com/SathMenthu/megak-headhunter-frontend
+a@c.b;2;2;4;5;https://github.com/SathMenthu/megak-headhunter-backend
+r@t.s;4;0;1;2;https://github.com/SathMenthu/megak-headhunter-backend,https://github.com/iwomipl/Movie-Wars-Front
+sk.d;4;1;2;3;https://github.com/SathMenthu/megak-headhunter-backend
+koniec@sprawdzania.pl;5;5;5;5;https://github.com/SathMenthu/megak-headhunter-backend,https://github.com/iwomipl/Movie-Wars-Front
+```
