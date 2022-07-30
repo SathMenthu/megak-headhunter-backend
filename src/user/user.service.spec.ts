@@ -92,6 +92,8 @@ describe('UserService', () => {
         user: {
           id: expect.any(String),
           email: expect.any(String),
+          firstName: expect.any(String),
+          lastName: expect.any(String),
           permissions: RoleEnum.STUDENT,
         },
       };
@@ -124,6 +126,8 @@ describe('UserService', () => {
     const dto = {
       email: 'example@test.com',
       password: 'test',
+      firstName: 'Test_Name',
+      lastName: 'Test_Name',
       permissions: RoleEnum.STUDENT,
     };
 
