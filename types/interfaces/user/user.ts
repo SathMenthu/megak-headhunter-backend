@@ -26,14 +26,14 @@ export interface ImportedStudentData {
   courseEngagement: number;
   projectDegree: number;
   teamProjectDegree: number;
-  bonusProjectUrls: string | string[];
+  bonusProjectUrls: string[];
   registerToken: string;
 }
 
 export interface MinimalInformationToCreateEmail {
   id: string;
   email: string;
-  registerToken: string;
+  activationLink: string;
 }
 
 export interface EditedUserData

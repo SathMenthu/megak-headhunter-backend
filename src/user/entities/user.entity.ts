@@ -193,6 +193,7 @@ export class User extends BaseEntity implements UserBasicData {
   })
   teamProjectDegree: number | null;
 
+  @Column({
     type: 'simple-array',
     nullable: true,
   })

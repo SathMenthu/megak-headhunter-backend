@@ -6,7 +6,7 @@ import {
   FindUsersResponse,
   ImportedStudentData,
   MinimalInformationToCreateEmail,
-  RolesEnum,
+  RoleEnum,
   UserBasicData,
 } from 'types';
 import * as Papa from 'papaparse';
@@ -57,24 +57,21 @@ export class UserService {
         const newStudent = new User();
 
         newStudent.id = uuid();
-        newStudent.permissions = RolesEnum.STUDENT;
+        newStudent.permissions = RoleEnum.STUDENT;
         newStudent.email = studentObj.email;
         newStudent.courseCompletion = studentObj.courseCompletion;
         newStudent.courseEngagement = studentObj.courseEngagement;
         newStudent.projectDegree = studentObj.projectDegree;
         newStudent.teamProjectDegree = studentObj.teamProjectDegree;
-        newStudent.bonusProjectUrls =
-          studentObj.bonusProjectUrls.length > 0
-            ? (studentObj.bonusProjectUrls as string[]).join(',')
-            : newStudent.bonusProjectUrls;
-        newStudent.registerToken = uuid();
+        // @TODO add project urls
+        newStudent.activationLink = uuid();
 
         await newStudent.save();
 
         return {
           id: newStudent.id,
           email: newStudent.email,
-          registerToken: newStudent.registerToken,
+          activationLink: newStudent.activationLink,
         };
       }
       return null;
@@ -117,7 +114,7 @@ export class UserService {
     studentData: MinimalInformationToCreateEmail,
   ): string[] {
     return [
-      `${mainConfigInfo.yourDomainName}/${studentData.id}/${studentData.registerToken}`,
+      `${mainConfigInfo.yourDomainName}/${studentData.id}/${studentData.activationLink}`,
       studentData.email,
     ];
   }
@@ -292,6 +289,8 @@ export class UserService {
       );
     } catch (e) {
       console.error(e.message);
+    }
+  }
 
   async registerStudent(
     foundedStudent: User,
@@ -387,7 +386,6 @@ export class UserService {
         message: 'User has been successfully registered.',
       };
     } catch (error) {
-      console.log(error);
       return {
         isSuccess: false,
         message: 'An error occurred while registering the user.',
