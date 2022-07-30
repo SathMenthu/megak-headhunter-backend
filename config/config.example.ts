@@ -32,3 +32,19 @@ export const secretConfig = {
   HASH_SECRET_KEY: 'secret',
   TOKEN_SECRET: 'secret',
 };
+
+export const mainConfigInfo = {
+  yourDomainName: 'YOUR_DOMAIN_NAME',
+};
+
+export const papaParseConfig = {
+  maxNumberOfLinesParsed: 300,
+};
+
+export const mailConfig = {
+  mailHost: 'HOST_NAME',
+  mailPort: 'PORT_NAME',
+  mailUserName: 'YOUR-EMAIL_USERNAME',
+  mailPassword: 'YOUR_PASSWORD',
+  adminEmail: 'YOUR-EMAIL',
+};

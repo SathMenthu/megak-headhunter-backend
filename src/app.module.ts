@@ -4,6 +4,7 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { UtilitiesModule } from './utilities/utilities.module';
 import { typeOrmConfig } from '../config/config';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { typeOrmConfig } from '../config/config';
     AuthModule,
     TypeOrmModule.forRootAsync(typeOrmConfig),
     UtilitiesModule,
+    MailModule,
   ],
   controllers: [],
 })

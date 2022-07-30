@@ -6,7 +6,10 @@ import {
   Param,
   Delete,
   Post,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   DefaultResponse,
   FindUserResponse,
@@ -21,7 +24,13 @@ import { StudentBasicData } from '../../types/interfaces/user/student';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  // @TODO delete in future, just for tests (later will import users from .csv)
+  @Post('/add-many-students')
+  @UseInterceptors(FileInterceptor('file'))
+  addManyStudents(@UploadedFile() file: Express.Multer.File): Promise<boolean> {
+    return this.userService.addManyStudents(file.buffer.toString());
+  }
+
+  // @TODO delete in future, just for tests (later will import users from .csv), you could try to use it for HR users
   @Post('/')
   create(@Body() user: Omit<UserBasicData, 'id'>): Promise<FindUsersResponse> {
     return this.userService.create(user);
