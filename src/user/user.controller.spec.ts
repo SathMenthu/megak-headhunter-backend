@@ -115,6 +115,8 @@ describe('UserController', () => {
       user: {
         id: expect.any(String),
         email: expect.any(String),
+        firstName: expect.any(String),
+        lastName: expect.any(String),
         permissions: RoleEnum.STUDENT,
       },
     };
@@ -140,6 +142,8 @@ describe('UserController', () => {
       user: {
         id: expect.any(String),
         email: expect.any(String),
+        firstName: expect.any(String),
+        lastName: expect.any(String),
         permissions: RoleEnum.STUDENT,
       },
     };
