@@ -37,6 +37,8 @@ describe('UserController', () => {
         user: {
           id,
           email: 'abc@example.com',
+          firstName: 'Test_Name',
+          lastName: 'Test_Name',
           permissions: RoleEnum.STUDENT,
         },
       }),
@@ -56,6 +58,8 @@ describe('UserController', () => {
         user: {
           id,
           email: editedUserData.email,
+          firstName: editedUserData.firstName,
+          lastName: editedUserData.lastName,
           permissions: editedUserData.permissions,
         },
       }),
@@ -65,6 +69,8 @@ describe('UserController', () => {
   const user = {
     email: 'test@example.com',
     password: 'test',
+    firstName: 'Test_Name',
+    lastName: 'Test_Name',
     permissions: RoleEnum.STUDENT,
   };
 
@@ -141,6 +147,8 @@ describe('UserController', () => {
     const dto = {
       id: 'abc',
       email: 'test@example.com',
+      firstName: 'Test_Name',
+      lastName: 'Test_Name',
       password: 'test_pwd',
       permissions: RoleEnum.STUDENT,
     };
