@@ -37,3 +37,4 @@ lerna-debug.log*
 # Custom
 /config/typeorm.config.ts
 /config/config.ts
+/package-lock.json
