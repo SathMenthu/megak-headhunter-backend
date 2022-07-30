@@ -12,6 +12,8 @@ describe('UserService', () => {
     id: 'abc',
     email: 'example@test.com',
     password: 'test',
+    firstName: 'Test_Name',
+    lastName: 'Test_Name',
     permissions: RoleEnum.STUDENT,
   };
 
@@ -76,9 +78,11 @@ describe('UserService', () => {
     it('should update user data', async () => {
       jest.spyOn(User.prototype, 'save').mockResolvedValue(new User());
       jest.spyOn(User, 'findOneByOrFail').mockResolvedValue(new User());
-      jest.spyOn(service, 'userFilter').mockReturnValue({
+      jest.spyOn(service, 'baseUserFilter').mockReturnValue({
         id: 'abc',
         email: 'example@test.com',
+        firstName: 'Test_Name',
+        lastName: 'Test_Name',
         permissions: RoleEnum.STUDENT,
       });
 
