@@ -47,6 +47,9 @@ export class User extends BaseEntity implements UserBasicData {
   @Column({ type: 'boolean', default: true })
   accountBlocked: boolean;
 
+  @Column({ length: 36, unique: true })
+  resetPasswordLink: string;
+
   @Column({ type: 'timestamp' })
   createdAt: string = Date.now().toLocaleString();
 
