@@ -1,5 +1,5 @@
 import { RoleEnum } from '../../enums';
-import { DefaultResponse } from '../global';
+import { BaseOfSort, DefaultResponse } from '../global';
 
 export interface UserBasicData {
   id: string;
@@ -7,7 +7,9 @@ export interface UserBasicData {
   password: string;
   firstName: string;
   lastName: string;
-  permissions: RoleEnum;
+  permission: RoleEnum;
+  avatar: string;
+  accountBlocked: boolean;
 }
 
 export type FilteredUser = Omit<UserBasicData, 'password'>;
@@ -18,6 +20,7 @@ export interface FindUserResponse extends DefaultResponse {
 
 export interface FindUsersResponse extends DefaultResponse {
   users?: FilteredUser[];
+  total?: number;
 }
 
 export interface ImportedStudentData {
@@ -36,6 +39,32 @@ export interface MinimalInformationToCreateEmail {
   activationLink: string;
 }
 
-export interface EditedUserData
-  extends Omit<UserBasicData, 'id'>,
-    DefaultResponse {}
+export interface EditedUserData {
+  id: string;
+  email: string;
+  newPassword: string | null;
+  name: string;
+  surname: string;
+  permission: RoleEnum;
+}
+
+export interface UserFilters extends BaseOfSort {
+  search: string | null
+  email: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  permission: {
+    text: string;
+    value: RoleEnum | null;
+  };
+  accountBlocked: boolean | null;
+}
+
+export interface AdminFilters extends BaseOfSort {
+  search: string | null;
+  permission: {
+    text: string;
+    value: RoleEnum | null;
+  };
+  accountBlocked: boolean | null;
+}

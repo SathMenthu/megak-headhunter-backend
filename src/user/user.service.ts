@@ -1,13 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
+  AdminFilters,
   DefaultResponse,
   FilteredUser,
+  FilterPayload,
   FindUserResponse,
   FindUsersResponse,
   ImportedStudentData,
   MinimalInformationToCreateEmail,
   RoleEnum,
   UserBasicData,
+  UserFilters,
 } from 'types';
 import * as Papa from 'papaparse';
 import { v4 as uuid } from 'uuid';
@@ -26,6 +29,7 @@ import {
   NumberInRangeValidator,
   StudentStatusValidator,
 } from './helpers/user.validators';
+import { Like, Not } from 'typeorm';
 
 @Injectable()
 export class UserService {
@@ -36,14 +40,24 @@ export class UserService {
   ) {}
 
   baseUserFilter(user: User): FilteredUser {
-    const { id, email, firstName, lastName, permissions } = user;
+    const {
+      id,
+      email,
+      firstName,
+      lastName,
+      permission,
+      avatar,
+      accountBlocked,
+    } = user;
 
     return {
       id,
       email,
       firstName,
       lastName,
-      permissions,
+      permission,
+      avatar,
+      accountBlocked,
     };
   }
 
@@ -57,7 +71,7 @@ export class UserService {
         const newStudent = new User();
 
         newStudent.id = uuid();
-        newStudent.permissions = RoleEnum.STUDENT;
+        newStudent.permission = RoleEnum.STUDENT;
         newStudent.email = studentObj.email;
         newStudent.courseCompletion = studentObj.courseCompletion;
         newStudent.courseEngagement = studentObj.courseEngagement;
@@ -119,14 +133,40 @@ export class UserService {
     ];
   }
 
-  async findAll(): Promise<FindUsersResponse> {
+  async findAll({
+    limit,
+    filters,
+    page,
+  }: FilterPayload<UserFilters & AdminFilters>): Promise<FindUsersResponse> {
     try {
-      const users = await User.find();
-      const usersAfterFiltration: FilteredUser[] = users.map(user =>
-        this.baseUserFilter(user),
-      );
+      const [results, total] = await User.findAndCount({
+        where: [
+          {
+            email: Like(`%${filters.search}%`) || Not('0xError404'),
+            permission: filters.permission.value,
+            accountBlocked: filters.accountBlocked,
+          },
+          {
+            firstName: Like(`%${filters.search}%`) || Not('0xError404'),
+            permission: filters.permission.value,
+            accountBlocked: filters.accountBlocked,
+          },
+          {
+            lastName: Like(`%${filters.search}%`) || Not('0xError404'),
+            permission: filters.permission.value,
+            accountBlocked: filters.accountBlocked,
+          },
+        ],
+        take: limit,
+        skip: (page - 1) * limit,
+        order: {
+          [filters.sortTarget]: filters.sortDirection ? 'DESC' : 'ASC',
+        },
+      });
+      results.map(user => this.baseUserFilter(user));
       return {
-        users: usersAfterFiltration,
+        users: results,
+        total,
         message: 'The user list has been successfully downloaded',
         isSuccess: true,
       };
@@ -156,7 +196,7 @@ export class UserService {
 
   async update(
     id: string,
-    { email, password, permissions }: UserBasicData,
+    { email, password, permission }: UserBasicData,
   ): Promise<FindUserResponse> {
     try {
       const user = await User.findOneByOrFail({ id });
@@ -164,7 +204,7 @@ export class UserService {
       user.password = password
         ? this.utilitiesService.hashPassword(password)
         : user.password;
-      user.permissions = permissions || user.permissions;
+      user.permission = permission || user.permission;
       await user.save();
 
       return {
@@ -197,7 +237,7 @@ export class UserService {
 
   async create(user: Omit<UserBasicData, 'id'>) {
     try {
-      const { email, password, permissions } = user;
+      const { email, password, permission } = user;
       const foundUser = await User.findOneBy({ email });
       if (foundUser) {
         return {
@@ -208,7 +248,7 @@ export class UserService {
         const newUser = new User();
         newUser.email = email;
         newUser.password = this.utilitiesService.hashPassword(password);
-        newUser.permissions = permissions;
+        newUser.permission = permission;
         await newUser.save();
         const filtratedUser = this.baseUserFilter(newUser);
         return {
@@ -218,6 +258,7 @@ export class UserService {
         };
       }
     } catch (error) {
+      console.log(error);
       return {
         message: 'An error occurred while creating the user',
         isSuccess: false,

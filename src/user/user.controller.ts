@@ -12,9 +12,11 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   DefaultResponse,
+  FilterPayload,
   FindUserResponse,
   FindUsersResponse,
   UserBasicData,
+  UserFilters,
 } from 'types';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
@@ -36,9 +38,11 @@ export class UserController {
     return this.userService.create(user);
   }
 
-  @Get('/')
-  findAll(): Promise<FindUsersResponse> {
-    return this.userService.findAll();
+  @Post('/users')
+  findAll(
+    @Body() payload: FilterPayload<UserFilters>,
+  ): Promise<FindUsersResponse> {
+    return this.userService.findAll(payload);
   }
 
   @Get('/:id')

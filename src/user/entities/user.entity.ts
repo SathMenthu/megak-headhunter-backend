@@ -39,10 +39,13 @@ export class User extends BaseEntity implements UserBasicData {
     type: 'enum',
     enum: RoleEnum,
   })
-  permissions: RoleEnum;
+  permission: RoleEnum;
 
   @Column({ nullable: true })
   activeTokenId: string | null;
+
+  @Column({ type: 'boolean', default: true })
+  accountBlocked: boolean;
 
   @Column({ type: 'timestamp' })
   createdAt: string = Date.now().toLocaleString();
@@ -202,6 +205,7 @@ export class User extends BaseEntity implements UserBasicData {
   @Column({
     length: 36,
     unique: true,
+    nullable: true,
   })
   activationLink: string | null;
 }
