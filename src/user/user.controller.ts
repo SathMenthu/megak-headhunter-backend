@@ -58,6 +58,19 @@ export class UserController {
     return this.userService.update(id, editedUserData);
   }
 
+  @Patch('/password/:id')
+  restartPassword(
+    @Param('id') id: string,
+    @Body() payload: { password: string },
+  ) {
+    return this.userService.resetPasswordForTargetUser(id, payload);
+  }
+
+  @Patch('/block/:id')
+  blockTargetUser(@Param('id') id: string) {
+    return this.userService.blockTargetUser(id);
+  }
+
   @Patch('/register/:id')
   async registerStudent(
     @Param('id') id: string,

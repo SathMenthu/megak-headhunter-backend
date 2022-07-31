@@ -433,4 +433,38 @@ export class UserService {
       };
     }
   }
+
+  async resetPasswordForTargetUser(id: string, payload: { password: string }) {
+    try {
+      const user = await User.findOneByOrFail({ id });
+      user.password = this.utilitiesService.hashPassword(payload.password);
+      await user.save();
+      return {
+        isSuccess: true,
+        message: 'Password changed successfully',
+      };
+    } catch (error) {
+      return {
+        isSuccess: false,
+        message: 'An error occurred while changing the password',
+      };
+    }
+  }
+
+  async blockTargetUser(id: string) {
+    try {
+      const user = await User.findOneByOrFail({ id });
+      user.accountBlocked = true;
+      await user.save();
+      return {
+        isSuccess: true,
+        message: 'The user has been successfully blocked',
+      };
+    } catch (error) {
+      return {
+        isSuccess: false,
+        message: 'An error occurred while trying to lock the user',
+      };
+    }
+  }
 }
