@@ -36,7 +36,13 @@ export interface ImportedStudentData {
 export interface MinimalInformationToCreateEmail {
   id: string;
   email: string;
-  activationLink: string;
+  activationLink?: string;
+  resetPasswordLink?: string;
+}
+
+export interface UrlAndEmailToSend {
+  url: string;
+  email: string;
 }
 
 export interface EditedUserData {
@@ -49,7 +55,7 @@ export interface EditedUserData {
 }
 
 export interface UserFilters extends BaseOfSort {
-  search: string | null
+  search: string | null;
   email: string | null;
   firstName: string | null;
   lastName: string | null;
