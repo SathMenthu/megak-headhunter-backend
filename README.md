@@ -86,11 +86,11 @@ $ npm run test:cov
 #### Import Students
 ```bash
   @POST
-  '/add-many-students' - import many students using by ADMIN with CSV file
+  '/add-many-students' - import many students using by ADMIN with CSV file. 
 ```
 
 ##### Requirements to form on frontend
-There should a CSV file with candidates, it should be sent by Multiform.  
+There should a CSV file with candidates, it should be sent by Multiform.  Name of only one input should be "file", and be set to File.
 
 ###### Requirements for CSV file
 The file should have Header fields named 
@@ -135,5 +135,21 @@ koniec@sprawdzania.pl;5;5;5;5;https://github.com/SathMenthu/megak-headhunter-bac
 ```
 
 #### email settings
-Sending emails from localhost is now using home.pl smtp server without SSL. When the app will land on production the settings will be easily changed in config.ts file.  
+Sending emails from localhost is now using home.pl smtp server without SSL. 
+- When the app will land on production the settings will be easily changed in config.ts file. 
+- If You are willing to see emails, that has been sent to users, just set mailPreview flag to true in config.ts file.
 
+If case You are using mailSlurper to grab emails going out of server, You can use one of two configs in mailconfig.ts and config.example.ts files. Configs described as a localhost config should let You easily switch to localhost. If You want to use Outside SMTP server settings, You need to comment config described as "localhost - config" uncomment and fill out proper fields' config described as an "Outside SMTP Server" in both files.
+
+#### Endpoint to confirm registration
+```bash
+  @POST
+  '/confirm-registration?id=<uuid>&token=<uuid>' - confirm registration endpoint
+```
+
+
+#### Endpoint to retrieve password
+```bash
+  @POST
+  '/retrieve-password?id=<uuid>&token=<uuid>' - retrieve password endpoint
+```

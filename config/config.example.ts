@@ -41,11 +41,25 @@ export const papaParseConfig = {
   maxNumberOfLinesParsed: 300,
 };
 
+/** ------------------ COMMENT ONE ---------------------*/
+/** ---------------- Outside SMTP Server - config ------------------ */
+// export const mailConfig = {
+//   mailHost: 'HOST_NAME',
+//   mailPort: 'PORT_NAME',
+//   mailUserName: 'YOUR-EMAIL_USERNAME',
+//   mailPassword: 'YOUR_PASSWORD',
+//   adminEmail: 'YOUR-EMAIL',
+//   mailSecure: false, // boolean true or false, depending on server status
+//   mailPreview: true, // If you want to see emails
+// };
+
+/** ------------------- localhost - config ------------------- */
 export const mailConfig = {
-  mailHost: 'HOST_NAME',
-  mailPort: 'PORT_NAME',
-  mailUserName: 'YOUR-EMAIL_USERNAME',
-  mailPassword: 'YOUR_PASSWORD',
-  adminEmail: 'YOUR-EMAIL',
-  mailSecure: false, // boolean true or false, depending on server status
+  mailHost: 'localhost',
+  mailPort: 2500,
+  mailUserName: 'user-name',
+  mailPassword: 'user-pass',
+  adminEmail: 'test@example.com',
+  mailSecure: false,
+  mailPreview: true,
 };
