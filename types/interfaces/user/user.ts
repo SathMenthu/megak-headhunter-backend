@@ -49,9 +49,11 @@ export interface EditedUserData {
   id: string;
   email: string;
   newPassword: string | null;
-  name: string;
-  surname: string;
+  firstName: string;
+  lastName: string;
   permission: RoleEnum;
+  avatar: string;
+  accountBlocked: boolean;
 }
 
 export interface UserFilters extends BaseOfSort {
