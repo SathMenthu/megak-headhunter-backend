@@ -101,30 +101,22 @@ export class UserService {
           email: newStudent.email,
           activationLink: newStudent.activationLink,
         };
-      } else {
-        foundUser.courseCompletion = studentObj.courseCompletion;
-        foundUser.courseEngagement = studentObj.courseEngagement;
-        foundUser.projectDegree = studentObj.projectDegree;
-        foundUser.teamProjectDegree = studentObj.teamProjectDegree;
-        foundUser.bonusProjectUrls = studentObj.bonusProjectUrls;
-
-        await foundUser.save();
-
-        return {
-          id: foundUser.id,
-          email: foundUser.email,
-          activationLink: foundUser.activationLink,
-        };
       }
-    } catch (e) {}
+      return null;
+    } catch (e) {
+      return null;
+    }
   }
 
-  private static checkIfThisIsAnEmail(email: string) {
+  private static checkIfThisIsAnEmail(email: string): string | null {
     const regex = /\S+@\S+\.\S+/;
     return regex.test(email) ? email : null;
   }
 
-  private static validateDataWhileParsing(validatedObject) {
+  private static validateDataWhileParsing(validatedObject: {
+    value: string;
+    field: string;
+  }): string[] | string | number | null {
     const { value, field } = validatedObject;
     // Transforming string into array of strings
     if (field === 'bonusProjectUrls') {
@@ -215,11 +207,11 @@ export class UserService {
 
   async getOneAndSendEmailWithPassRecovery(
     emailObj: ForgotPasswordDto,
-  ): Promise<FindUserResponse> {
+  ): Promise<DefaultResponse> {
     try {
       if (UserService.checkIfThisIsAnEmail(emailObj.email)) {
         const user = await User.findOneByOrFail({ email: emailObj.email });
-        const studentData = {
+        const studentData: MinimalInformationToCreateEmail = {
           id: user.id,
           email: user.email,
           resetPasswordLink: uuid(),
@@ -241,14 +233,13 @@ export class UserService {
           isSuccess: true,
         };
       }
-      console.log(emailObj.email);
       return {
         message: `Sorry, this is not an email you have sent my friend.`,
         isSuccess: false,
       };
     } catch (e) {
       return {
-        message: `There's a problem with this email. Check it again please.`,
+        message: `The're is not such email in MegaK. Check it again please.`,
         isSuccess: false,
       };
     }
@@ -342,15 +333,15 @@ export class UserService {
     }
   }
 
-  async addManyStudents(file): Promise<boolean> {
+  async addManyStudents(file: string): Promise<DefaultResponse> {
     try {
       const { data } = Papa.parse(file, {
         header: true,
         preview: papaParseConfig.maxNumberOfLinesParsed,
         transform(
           value: string,
-          field: string | number,
-        ): string[] | number | string {
+          field: string,
+        ): string[] | number | string | null {
           return UserService.validateDataWhileParsing({
             value,
             field,
@@ -359,7 +350,7 @@ export class UserService {
       });
 
       /** ------------ IMPORTANT TO FILTER CONSERVATIVE OR AGGRESSIVE -------------- */
-      const filteredStudents = data.filter(student => {
+      const filteredStudents = data.filter((student: ImportedStudentData) => {
         const values = Object.values(student);
         // If we have null anywhere, that means the record is not good
         return !values.includes(null);
@@ -387,32 +378,45 @@ export class UserService {
         ),
       );
 
-      await Promise.all(
-        generatedUrlsToRegisterWithEmails.map(async oneStudent => {
-          try {
-            return await this.sendInvitationEmail(oneStudent);
-          } catch (e) {
-            console.error(e.message);
-            return null;
-          }
-        }),
-      );
-      return true;
+      const sentEmails = (
+        await Promise.all(
+          generatedUrlsToRegisterWithEmails.map(async oneStudent => {
+            try {
+              return await this.sendInvitationEmail(oneStudent);
+            } catch (e) {
+              return null;
+            }
+          }),
+        )
+      ).filter(obj => obj);
+
+      return {
+        message: `Created ${studentsAddedToDb.length} new users out of ${
+          data.length - 1
+        } positions. We have sent ${sentEmails.length} confirmation emails.`,
+        isSuccess: true,
+      };
     } catch (e) {
       console.error(e);
-      return false;
+      return {
+        message: 'Could not create new users.',
+        isSuccess: false,
+      };
     }
   }
 
-  private async sendInvitationEmail(studentData: UrlAndEmailToSend) {
+  private async sendInvitationEmail(
+    studentData: UrlAndEmailToSend,
+  ): Promise<boolean> {
     try {
       await this.mailService.sendMail(
         studentData.email,
         `Account created for ${studentData.email}`,
         createInvitationEmailHTML(studentData),
       );
+      return true;
     } catch (e) {
-      console.error(e.message);
+      return null;
     }
   }
 

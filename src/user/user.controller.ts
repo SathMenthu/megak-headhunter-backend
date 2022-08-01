@@ -34,14 +34,16 @@ export class UserController {
 
   @Post('/add-many-students')
   @UseInterceptors(FileInterceptor('file'))
-  addManyStudents(@UploadedFile() file: Express.Multer.File): Promise<boolean> {
-    return this.userService.addManyStudents(file.buffer.toString());
+  addManyStudents(
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<DefaultResponse> {
+    return this.userService.addManyStudents(file.buffer.toString() as string);
   }
 
   @Post('/forgot-pass')
   findOneAndSendEmail(
     @Body() emailObj: ForgotPasswordDto,
-  ): Promise<FindUserResponse> {
+  ): Promise<DefaultResponse> {
     return this.userService.getOneAndSendEmailWithPassRecovery(emailObj);
   }
 
