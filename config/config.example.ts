@@ -47,4 +47,5 @@ export const mailConfig = {
   mailUserName: 'YOUR-EMAIL_USERNAME',
   mailPassword: 'YOUR_PASSWORD',
   adminEmail: 'YOUR-EMAIL',
+  mailSecure: false, // boolean true or false, depending on server status
 };

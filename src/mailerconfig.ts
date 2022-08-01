@@ -2,7 +2,18 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { mailConfig } from '../config/config';
 
 export = {
-  transport: `smtp://${mailConfig.mailUserName}:${mailConfig.mailPassword}@${mailConfig.mailHost}:${mailConfig.mailPort}`,
+  transport: {
+    host: mailConfig.mailHost,
+    secure: mailConfig.mailSecure,
+    port: mailConfig.mailPort,
+    auth: {
+      user: mailConfig.adminEmail,
+      pass: mailConfig.mailPassword,
+    },
+    tls: {
+      rejectUnauthorized: false,
+    },
+  },
   defaults: {
     from: mailConfig.adminEmail,
   },
@@ -13,4 +24,5 @@ export = {
       strict: true,
     },
   },
+  preview: true,
 };

@@ -88,7 +88,11 @@ $ npm run test:cov
   @POST
   '/add-many-students' - import many students using by ADMIN with CSV file
 ```
-##### Requirements for CSV file
+
+##### Requirements to form on frontend
+There should a CSV file with candidates, it should be sent by Multiform.  
+
+###### Requirements for CSV file
 The file should have Header fields named 
 - email
 
@@ -123,3 +127,13 @@ r@t.s;4;0;1;2;https://github.com/SathMenthu/megak-headhunter-backend,https://git
 sk.d;4;1;2;3;https://github.com/SathMenthu/megak-headhunter-backend
 koniec@sprawdzania.pl;5;5;5;5;https://github.com/SathMenthu/megak-headhunter-backend,https://github.com/iwomipl/Movie-Wars-Front
 ```
+
+#### Forgot Password
+```bash
+  @POST
+  '/forgot-pass' - in Body {email:  'userEmail'}
+```
+
+#### email settings
+Sending emails from localhost is now using home.pl smtp server without SSL. When the app will land on production the settings will be easily changed in config.ts file.  
+

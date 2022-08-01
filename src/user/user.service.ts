@@ -15,11 +15,7 @@ import {
 import * as Papa from 'papaparse';
 import { v4 as uuid } from 'uuid';
 import { createEmailContent } from 'src/templates/email/email';
-import { User } from './entities/user.entity';
-import { UtilitiesService } from '../utilities/utilities.service';
-import { mainConfigInfo, papaParseConfig } from '../../config/config';
-import { MailService } from '../mail/mail.service';
-import { StudentBasicData } from '../../types/interfaces/user/student';
+import { Like, Not } from 'typeorm';
 import {
   BooleanValidator,
   CityValidator,
@@ -29,7 +25,11 @@ import {
   NumberInRangeValidator,
   StudentStatusValidator,
 } from './helpers/user.validators';
-import { Like, Not } from 'typeorm';
+import { StudentBasicData } from '../../types/interfaces/user/student';
+import { MailService } from '../mail/mail.service';
+import { mainConfigInfo, papaParseConfig } from '../../config/config';
+import { UtilitiesService } from '../utilities/utilities.service';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
