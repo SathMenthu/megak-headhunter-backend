@@ -7,6 +7,7 @@ import {
   FindUserResponse,
   FindUsersResponse,
   ImportedStudentData,
+  ManuallyCreatedUser,
   MinimalInformationToCreateEmail,
   RoleEnum,
   UrlAndEmailToSend,
@@ -26,6 +27,7 @@ import {
   ExpectedContractTypeValidator,
   ExpectedTypeWorkValidator,
   LinksValidator,
+  MailValidator,
   NumberInRangeValidator,
   StudentStatusValidator,
 } from './helpers/user.validators';
@@ -66,7 +68,7 @@ export class UserService {
     };
   }
 
-  userToCrateEmailUrls(user: User): MinimalInformationToCreateEmail {
+  userToCreateEmailUrls(user: User): MinimalInformationToCreateEmail {
     const { id, email, activationLink } = user;
     return {
       id,
@@ -116,7 +118,9 @@ export class UserService {
           activationLink: foundUser.activationLink,
         };
       }
-    } catch (e) {}
+    } catch (e) {
+      return e.message;
+    }
   }
 
   private static checkIfThisIsAnEmail(email: string) {
@@ -311,9 +315,16 @@ export class UserService {
     }
   }
 
-  async create(user: Omit<UserBasicData, 'id'>) {
+  async create(user: ManuallyCreatedUser) {
     try {
-      const { email, password, permission } = user;
+      const {
+        email,
+        firstName,
+        lastName,
+        permission,
+        maxReservedStudents,
+        company,
+      } = user;
       const foundUser = await User.findOneBy({ email });
       if (foundUser) {
         return {
@@ -322,19 +333,35 @@ export class UserService {
         };
       } else {
         const newUser = new User();
-        newUser.email = email;
-        newUser.password = this.utilitiesService.hashPassword(password);
+        newUser.email = MailValidator(email);
+        newUser.firstName = firstName;
+        newUser.lastName = lastName;
+        if (!Object.values(RoleEnum).includes(permission))
+          throw Error('Invalid permission');
         newUser.permission = permission;
+        if (newUser.permission === 'HR') {
+          newUser.company = company || '';
+          newUser.maxReservedStudents =
+            NumberInRangeValidator(maxReservedStudents, 1, 999) || 1;
+        }
+        newUser.activationLink = uuid();
         await newUser.save();
-        const filtratedUser = this.baseUserFilter(newUser);
+
+        const url = UserService.createUrlsSentToStudents(
+          newUser,
+          'confirm-registration',
+          'id',
+          'token',
+        );
+
+        //@TODO SEND EMAIL
+
         return {
           message: `User was successfully created.`,
           isSuccess: true,
-          user: filtratedUser,
         };
       }
     } catch (error) {
-      console.log(error);
       return {
         message: 'An error occurred while creating the user',
         isSuccess: false,
@@ -404,7 +431,7 @@ export class UserService {
     }
   }
 
-  private async sendInvitationEmail(studentData: UrlAndEmailToSend) {
+  async sendInvitationEmail(studentData: UrlAndEmailToSend) {
     try {
       await this.mailService.sendMail(
         studentData.email,

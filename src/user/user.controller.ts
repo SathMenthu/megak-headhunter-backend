@@ -15,6 +15,7 @@ import {
   FilterPayload,
   FindUserResponse,
   FindUsersResponse,
+  ManuallyCreatedUser,
   UserBasicData,
   UserFilters,
 } from 'types';
@@ -45,9 +46,9 @@ export class UserController {
     return this.userService.getOneAndSendEmailWithPassRecovery(emailObj);
   }
 
-  // @TODO delete in future, just for tests (later will import users from .csv), you could try to use it for HR users
+  // @TODO add admin role validation
   @Post('/')
-  create(@Body() user: Omit<UserBasicData, 'id'>): Promise<FindUsersResponse> {
+  create(@Body() user: ManuallyCreatedUser): Promise<FindUsersResponse> {
     return this.userService.create(user);
   }
 

@@ -12,6 +12,15 @@ export interface UserBasicData {
   accountBlocked: boolean;
 }
 
+export interface ManuallyCreatedUser {
+  email: string;
+  firstName: string;
+  lastName: string;
+  permission: RoleEnum;
+  maxReservedStudents: number | null;
+  company: string | null;
+}
+
 export type FilteredUser = Omit<UserBasicData, 'password'>;
 
 export interface FindUserResponse extends DefaultResponse {
