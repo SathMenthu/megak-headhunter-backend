@@ -24,6 +24,10 @@ export const CityValidator = (city: string) =>
     "^(?:[A-Za-z]{2,}(?:(.s|'ss|s?-s?|s)?(?=[A-Za-z]+))){1,2}(?:[A-Za-z]+)?$",
   ).test(city) && city;
 
+export const MailValidator = (email: string) =>
+  RegExp('^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+.[a-zA-Z0-9-.]+$').test(email) &&
+  email;
+
 export const NumberInRangeValidator = (
   value: number,
   starts: number,
