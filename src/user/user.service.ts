@@ -9,17 +9,17 @@ import {
   ImportedStudentData,
   MinimalInformationToCreateEmail,
   RoleEnum,
+  UrlAndEmailToSend,
   UserBasicData,
   UserFilters,
 } from 'types';
 import * as Papa from 'papaparse';
 import { v4 as uuid } from 'uuid';
-import { createEmailContent } from 'src/templates/email/email';
-import { User } from './entities/user.entity';
-import { UtilitiesService } from '../utilities/utilities.service';
-import { mainConfigInfo, papaParseConfig } from '../../config/config';
-import { MailService } from '../mail/mail.service';
-import { StudentBasicData } from '../../types/interfaces/user/student';
+import {
+  createForgotPasswordEmailHTML,
+  createInvitationEmailHTML,
+} from 'src/templates/email/email';
+import { Like, Not } from 'typeorm';
 import {
   BooleanValidator,
   CityValidator,
@@ -29,7 +29,12 @@ import {
   NumberInRangeValidator,
   StudentStatusValidator,
 } from './helpers/user.validators';
-import { Like, Not } from 'typeorm';
+import { StudentBasicData } from '../../types/interfaces/user/student';
+import { MailService } from '../mail/mail.service';
+import { mainConfigInfo, papaParseConfig } from '../../config/config';
+import { UtilitiesService } from '../utilities/utilities.service';
+import { User } from './entities/user.entity';
+import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
 
 @Injectable()
 export class UserService {
@@ -61,6 +66,15 @@ export class UserService {
     };
   }
 
+  userToCrateEmailUrls(user: User): MinimalInformationToCreateEmail {
+    const { id, email, activationLink } = user;
+    return {
+      id,
+      email,
+      activationLink,
+    };
+  }
+
   private static async checkAndAddStudent(
     studentObj: ImportedStudentData,
   ): Promise<MinimalInformationToCreateEmail | null> {
@@ -77,7 +91,7 @@ export class UserService {
         newStudent.courseEngagement = studentObj.courseEngagement;
         newStudent.projectDegree = studentObj.projectDegree;
         newStudent.teamProjectDegree = studentObj.teamProjectDegree;
-        // @TODO add project urls
+        newStudent.bonusProjectUrls = studentObj.bonusProjectUrls;
         newStudent.activationLink = uuid();
 
         await newStudent.save();
@@ -95,6 +109,11 @@ export class UserService {
     }
   }
 
+  private static checkIfThisIsAnEmail(email: string) {
+    const regex = /\S+@\S+\.\S+/;
+    return regex.test(email) ? email : null;
+  }
+
   private static validateDataWhileParsing(validatedObject) {
     const { value, field } = validatedObject;
     // Transforming string into array of strings
@@ -109,8 +128,7 @@ export class UserService {
       }
     } else if (field === 'email') {
       // Checking if we have an email here
-      const regex = /\S+@\S+\.\S+/;
-      return regex.test(value) ? value : null;
+      return UserService.checkIfThisIsAnEmail(value);
     } else if (
       Number(value) <= 5 &&
       Number(value) >= 0 &&
@@ -126,11 +144,18 @@ export class UserService {
 
   private static createUrlsSentToStudents(
     studentData: MinimalInformationToCreateEmail,
-  ): string[] {
-    return [
-      `${mainConfigInfo.yourDomainName}/${studentData.id}/${studentData.activationLink}`,
-      studentData.email,
-    ];
+    apiString: string,
+    firstParamName: string,
+    secondParamName: string,
+  ): UrlAndEmailToSend {
+    return {
+      url: `${mainConfigInfo.yourDomainName}/${apiString}?${firstParamName}=${
+        studentData.id
+      }&${secondParamName}=${
+        studentData.activationLink || studentData.resetPasswordLink
+      }`,
+      email: studentData.email,
+    };
   }
 
   async findAll({
@@ -173,6 +198,47 @@ export class UserService {
     } catch (error) {
       return {
         message: 'An error occurred while downloading the user list',
+        isSuccess: false,
+      };
+    }
+  }
+
+  async getOneAndSendEmailWithPassRecovery(
+    emailObj: ForgotPasswordDto,
+  ): Promise<FindUserResponse> {
+    try {
+      if (UserService.checkIfThisIsAnEmail(emailObj.email)) {
+        const user = await User.findOneByOrFail({ email: emailObj.email });
+        const studentData = {
+          id: user.id,
+          email: user.email,
+          resetPasswordLink: uuid(),
+        };
+
+        const newPasswordUrlAndEmail = UserService.createUrlsSentToStudents(
+          studentData,
+          'retrieve-password',
+          'id',
+          'token',
+        );
+
+        await this.sendForgotPasswordEmail(newPasswordUrlAndEmail);
+        user.resetPasswordLink = studentData.resetPasswordLink;
+        await user.save();
+
+        return {
+          message: 'Message sent, check your email.',
+          isSuccess: true,
+        };
+      }
+      console.log(emailObj.email);
+      return {
+        message: `Sorry, this is not an email you have sent my friend.`,
+        isSuccess: false,
+      };
+    } catch (e) {
+      return {
+        message: `There's a problem with this email. Check it again please.`,
         isSuccess: false,
       };
     }
@@ -281,6 +347,8 @@ export class UserService {
           });
         },
       });
+
+      /** ------------ IMPORTANT TO FILTER CONSERVATIVE OR AGGRESSIVE -------------- */
       const filteredStudents = data.filter(student => {
         const values = Object.values(student);
         // If we have null anywhere, that means the record is not good
@@ -301,7 +369,12 @@ export class UserService {
       ).filter(student => student !== null);
 
       const generatedUrlsToRegisterWithEmails = studentsAddedToDb.map(student =>
-        UserService.createUrlsSentToStudents(student),
+        UserService.createUrlsSentToStudents(
+          student,
+          'confirm-registration',
+          'id',
+          'token',
+        ),
       );
 
       await Promise.all(
@@ -321,12 +394,24 @@ export class UserService {
     }
   }
 
-  private async sendInvitationEmail(studentData: string[]) {
+  private async sendInvitationEmail(studentData: UrlAndEmailToSend) {
     try {
       await this.mailService.sendMail(
-        studentData[1],
-        `Account created for ${studentData[1]}`,
-        createEmailContent(studentData),
+        studentData.email,
+        `Account created for ${studentData.email}`,
+        createInvitationEmailHTML(studentData),
+      );
+    } catch (e) {
+      console.error(e.message);
+    }
+  }
+
+  private async sendForgotPasswordEmail(studentData: UrlAndEmailToSend) {
+    try {
+      await this.mailService.sendMail(
+        studentData.email,
+        `Retrieve Your Password ${studentData.email}`,
+        createForgotPasswordEmailHTML(studentData),
       );
     } catch (e) {
       console.error(e.message);

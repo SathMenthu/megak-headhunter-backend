@@ -21,15 +21,28 @@ import {
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { StudentBasicData } from '../../types/interfaces/user/student';
+import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @Get('/:id')
+  findOne(@Param('id') id: string): Promise<FindUserResponse> {
+    return this.userService.findOne(id);
+  }
+
   @Post('/add-many-students')
   @UseInterceptors(FileInterceptor('file'))
   addManyStudents(@UploadedFile() file: Express.Multer.File): Promise<boolean> {
     return this.userService.addManyStudents(file.buffer.toString());
+  }
+
+  @Post('/forgot-pass')
+  findOneAndSendEmail(
+    @Body() emailObj: ForgotPasswordDto,
+  ): Promise<FindUserResponse> {
+    return this.userService.getOneAndSendEmailWithPassRecovery(emailObj);
   }
 
   // @TODO delete in future, just for tests (later will import users from .csv), you could try to use it for HR users
@@ -43,11 +56,6 @@ export class UserController {
     @Body() payload: FilterPayload<UserFilters>,
   ): Promise<FindUsersResponse> {
     return this.userService.findAll(payload);
-  }
-
-  @Get('/:id')
-  findOne(@Param('id') id: string): Promise<FindUserResponse> {
-    return this.userService.findOne(id);
   }
 
   @Patch('/:id')
