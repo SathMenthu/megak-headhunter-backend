@@ -77,7 +77,7 @@ export class UserService {
         newStudent.courseEngagement = studentObj.courseEngagement;
         newStudent.projectDegree = studentObj.projectDegree;
         newStudent.teamProjectDegree = studentObj.teamProjectDegree;
-        // @TODO add project urls
+        newStudent.bonusProjectUrls = studentObj.bonusProjectUrls;
         newStudent.activationLink = uuid();
 
         await newStudent.save();
