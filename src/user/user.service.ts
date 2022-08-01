@@ -101,12 +101,22 @@ export class UserService {
           email: newStudent.email,
           activationLink: newStudent.activationLink,
         };
+      } else {
+        foundUser.courseCompletion = studentObj.courseCompletion;
+        foundUser.courseEngagement = studentObj.courseEngagement;
+        foundUser.projectDegree = studentObj.projectDegree;
+        foundUser.teamProjectDegree = studentObj.teamProjectDegree;
+        foundUser.bonusProjectUrls = studentObj.bonusProjectUrls;
+
+        await foundUser.save();
+
+        return {
+          id: foundUser.id,
+          email: foundUser.email,
+          activationLink: foundUser.activationLink,
+        };
       }
-      return null;
-    } catch (e) {
-      console.error(e.message);
-      return null;
-    }
+    } catch (e) {}
   }
 
   private static checkIfThisIsAnEmail(email: string) {
