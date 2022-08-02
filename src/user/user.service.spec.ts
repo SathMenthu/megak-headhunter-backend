@@ -83,7 +83,7 @@ describe('UserService', () => {
         email: 'example@test.com',
         firstName: 'Test_Name',
         lastName: 'Test_Name',
-        permissions: RoleEnum.STUDENT,
+        permission: RoleEnum.STUDENT,
       });
 
       const result = {

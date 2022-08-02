@@ -47,25 +47,8 @@ export class UserService {
   ) {}
 
   baseUserFilter(user: User): FilteredUser {
-    const {
-      id,
-      email,
-      firstName,
-      lastName,
-      permission,
-      avatar,
-      accountBlocked,
-    } = user;
-
-    return {
-      id,
-      email,
-      firstName,
-      lastName,
-      permission,
-      avatar,
-      accountBlocked,
-    };
+    const { password: deletedKey, ...otherKeys } = user;
+    return otherKeys;
   }
 
   userToCreateEmailUrls(user: User): MinimalInformationToCreateEmail {
@@ -457,7 +440,7 @@ export class UserService {
   }
 
   async registerStudent(
-    foundedStudent: User,
+    foundedUser: User,
     {
       studentStatus,
       portfolioUrls,
@@ -481,70 +464,70 @@ export class UserService {
   ): Promise<DefaultResponse> {
     try {
       // Student Status
-      foundedStudent.studentStatus =
-        StudentStatusValidator(studentStatus) || foundedStudent.studentStatus;
+      foundedUser.studentStatus =
+        StudentStatusValidator(studentStatus) || foundedUser.studentStatus;
       // Portfolio Urls
-      foundedStudent.portfolioUrls =
-        LinksValidator(portfolioUrls) || foundedStudent.portfolioUrls;
+      foundedUser.portfolioUrls =
+        LinksValidator(portfolioUrls) || foundedUser.portfolioUrls;
       // Project Urls
-      foundedStudent.projectUrls =
-        LinksValidator(projectUrls) || foundedStudent.projectUrls;
+      foundedUser.projectUrls =
+        LinksValidator(projectUrls) || foundedUser.projectUrls;
       // Bio
-      foundedStudent.bio = bio || foundedStudent.bio;
+      foundedUser.bio = bio || foundedUser.bio;
       // Expected Type Work
-      foundedStudent.expectedTypeWork =
+      foundedUser.expectedTypeWork =
         ExpectedTypeWorkValidator(expectedTypeWork) ||
-        foundedStudent.expectedTypeWork;
+        foundedUser.expectedTypeWork;
       // Target Work City
-      foundedStudent.targetWorkCity =
-        CityValidator(targetWorkCity) || foundedStudent.targetWorkCity;
+      foundedUser.targetWorkCity =
+        CityValidator(targetWorkCity) || foundedUser.targetWorkCity;
       // Expected Contract Type
-      foundedStudent.expectedContractType =
+      foundedUser.expectedContractType =
         ExpectedContractTypeValidator(expectedContractType) ||
-        foundedStudent.expectedContractType;
+        foundedUser.expectedContractType;
       // Expected Salary
-      foundedStudent.expectedSalary =
+      foundedUser.expectedSalary =
         NumberInRangeValidator(expectedSalary, 1, 9999999) ||
-        foundedStudent.expectedSalary;
+        foundedUser.expectedSalary;
       // Can Take Apprenticeship
-      foundedStudent.canTakeApprenticeship =
+      foundedUser.canTakeApprenticeship =
         canTakeApprenticeship === 'null' && 'undefined'
-          ? foundedStudent.canTakeApprenticeship
+          ? foundedUser.canTakeApprenticeship
           : BooleanValidator(canTakeApprenticeship);
       // Month of Commercial Experience
-      foundedStudent.monthsOfCommercialExp =
+      foundedUser.monthsOfCommercialExp =
         NumberInRangeValidator(monthsOfCommercialExp, 1, 999) ||
-        foundedStudent.monthsOfCommercialExp;
+        foundedUser.monthsOfCommercialExp;
       // Education
-      foundedStudent.education = education || foundedStudent.education;
+      foundedUser.education = education || foundedUser.education;
       // Work Experience
-      foundedStudent.workExperience =
-        workExperience || foundedStudent.workExperience;
+      foundedUser.workExperience = workExperience || foundedUser.workExperience;
       // Courses
-      foundedStudent.courses = courses || foundedStudent.courses;
+      foundedUser.courses = courses || foundedUser.courses;
       // Course Completion
-      foundedStudent.courseCompletion =
+      foundedUser.courseCompletion =
         NumberInRangeValidator(courseCompletion, 1, 5) ||
-        foundedStudent.courseCompletion;
+        foundedUser.courseCompletion;
       // Course Engagement
-      foundedStudent.courseEngagement =
+      foundedUser.courseEngagement =
         NumberInRangeValidator(courseEngagement, 1, 5) ||
-        foundedStudent.courseEngagement;
+        foundedUser.courseEngagement;
       // Project Degree
-      foundedStudent.projectDegree =
+      foundedUser.projectDegree =
         NumberInRangeValidator(projectDegree, 1, 5) ||
-        foundedStudent.projectDegree;
+        foundedUser.projectDegree;
       // Team Project Degree
-      foundedStudent.teamProjectDegree =
+      foundedUser.teamProjectDegree =
         NumberInRangeValidator(teamProjectDegree, 1, 5) ||
-        foundedStudent.teamProjectDegree;
+        foundedUser.teamProjectDegree;
       // Bonus Project Urls
-      foundedStudent.bonusProjectUrls =
-        LinksValidator(bonusProjectUrls) || foundedStudent.bonusProjectUrls;
+      foundedUser.bonusProjectUrls =
+        LinksValidator(bonusProjectUrls) || foundedUser.bonusProjectUrls;
       // Clear Token
-      foundedStudent.activationLink = null;
+      foundedUser.activationLink = null;
+      foundedUser.accountBlocked = false;
       // Save User
-      await foundedStudent.save();
+      await foundedUser.save();
       return {
         isSuccess: true,
         message: 'User has been successfully registered.',
@@ -587,6 +570,25 @@ export class UserService {
       return {
         isSuccess: false,
         message: 'An error occurred while trying to lock the user',
+      };
+    }
+  }
+
+  async checkRegisterLink(id: string, token: string) {
+    try {
+      const user = await User.findOneByOrFail({ id });
+      if (user.activationLink !== token) {
+        throw Error();
+      }
+      return {
+        isSuccess: true,
+        message: 'Link and user has been properly validated.',
+        user: this.baseUserFilter(user),
+      };
+    } catch (error) {
+      return {
+        isSuccess: false,
+        message: 'Link has expired and is no longer up to date.',
       };
     }
   }

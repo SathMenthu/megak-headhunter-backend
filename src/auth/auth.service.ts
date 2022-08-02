@@ -74,13 +74,11 @@ export class AuthService {
         .json({
           isSuccess: true,
           message: 'Successfully logged in.',
-          user: [
-            {
-              id: user.id,
-              email: user.email,
-              permission: user.permission,
-            },
-          ],
+          user: {
+            id: user.id,
+            email: user.email,
+            permission: user.permission,
+          },
         });
     } catch (e) {
       return response.json({

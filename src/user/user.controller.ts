@@ -8,10 +8,13 @@ import {
   Post,
   UseInterceptors,
   UploadedFile,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
+  CheckRegisterDto,
   DefaultResponse,
+  FilteredUser,
   FilterPayload,
   FindUserResponse,
   FindUsersResponse,
@@ -19,6 +22,7 @@ import {
   UserBasicData,
   UserFilters,
 } from 'types';
+import { AuthGuard } from '@nestjs/passport';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { StudentBasicData } from '../../types/interfaces/user/student';
@@ -28,17 +32,23 @@ import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  @UseGuards(AuthGuard('jwt'))
   @Get('/:id')
   findOne(@Param('id') id: string): Promise<FindUserResponse> {
     return this.userService.findOne(id);
   }
-
+  @UseGuards(AuthGuard('jwt'))
   @Post('/add-many-students')
   @UseInterceptors(FileInterceptor('file'))
   addManyStudents(
     @UploadedFile() file: Express.Multer.File,
   ): Promise<DefaultResponse> {
     return this.userService.addManyStudents(file.buffer.toString() as string);
+  }
+
+  @Post('/check-register-link')
+  checkRegisterLink(@Body() { id, token }: CheckRegisterDto) {
+    return this.userService.checkRegisterLink(id, token);
   }
 
   @Post('/forgot-pass')
@@ -54,6 +64,7 @@ export class UserController {
     return this.userService.create(user);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Post('/users')
   findAll(
     @Body() payload: FilterPayload<UserFilters>,
@@ -61,6 +72,7 @@ export class UserController {
     return this.userService.findAll(payload);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Patch('/:id')
   update(
     @Param('id') id: string,
@@ -69,6 +81,7 @@ export class UserController {
     return this.userService.update(id, editedUserData);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Patch('/password/:id')
   restartPassword(
     @Param('id') id: string,
@@ -77,22 +90,24 @@ export class UserController {
     return this.userService.resetPasswordForTargetUser(id, payload);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Patch('/block/:id')
   blockTargetUser(@Param('id') id: string) {
     return this.userService.blockTargetUser(id);
   }
 
-  @Patch('/register/:id')
+  @Patch('/confirm-register/:id')
   async registerStudent(
-    @Param('id') id: string,
-    @Body() studentData: Partial<StudentBasicData>,
+    @Param('id') activationLink: string,
+    @Body() userData: FilteredUser,
   ): Promise<DefaultResponse> {
-    const foundedStudent = await User.findOneBy({ activationLink: id });
-    return foundedStudent
-      ? this.userService.registerStudent(foundedStudent, studentData)
+    const foundedUser = await User.findOneBy({ activationLink });
+    return foundedUser
+      ? this.userService.registerStudent(foundedUser, userData)
       : { isSuccess: false, message: 'Link is no longer active' };
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Delete('/:id')
   remove(@Param('id') id: string): Promise<DefaultResponse> {
     return this.userService.remove(id);

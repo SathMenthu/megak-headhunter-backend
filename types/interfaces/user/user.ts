@@ -1,5 +1,10 @@
-import { RoleEnum } from '../../enums';
+import {
+  ExpectedContractTypeEnum,
+  ExpectedTypeWorkEnum,
+  RoleEnum,
+} from '../../enums';
 import { BaseOfSort, DefaultResponse } from '../global';
+import { StudentStatus } from '../../enums/student.status.enum';
 
 export interface UserBasicData {
   id: string;
@@ -21,7 +26,7 @@ export interface ManuallyCreatedUser {
   company: string | null;
 }
 
-export type FilteredUser = Omit<UserBasicData, 'password'>;
+export type FilteredUser = Omit<Student & Hr, 'password'>;
 
 export interface FindUserResponse extends DefaultResponse {
   user?: FilteredUser;
@@ -84,4 +89,40 @@ export interface AdminFilters extends BaseOfSort {
     value: RoleEnum | null;
   };
   accountBlocked: boolean | null;
+}
+
+export interface CheckRegisterDto {
+  id: string;
+  token: string;
+}
+
+export interface Hr extends UserBasicData {
+  company: string | null;
+  maxReservedStudents: number | null;
+}
+
+export interface Student extends UserBasicData {
+  resetPasswordLink: string | null;
+  reservationEndDate: string | null;
+  studentStatus: StudentStatus | null;
+  phoneNumber: number | null;
+  githubUsername: string | null;
+  portfolioUrls: string[] | null;
+  projectUrls: string[] | null;
+  bio: string | null;
+  expectedTypeWork: ExpectedTypeWorkEnum | null;
+  targetWorkCity: string | null;
+  expectedContractType: ExpectedContractTypeEnum | null;
+  expectedSalary: number | null;
+  canTakeApprenticeship: boolean | null;
+  monthsOfCommercialExp: number | null;
+  education: string | null;
+  workExperience: string | null;
+  courses: string | null;
+  courseCompletion: number | null;
+  courseEngagement: number | null;
+  projectDegree: number | null;
+  teamProjectDegree: number | null;
+  bonusProjectUrls: string[] | null;
+  activationLink: string | null;
 }
