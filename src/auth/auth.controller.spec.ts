@@ -7,7 +7,6 @@ import { UtilitiesService } from '../utilities/utilities.service';
 import { AuthLoginData, RoleEnum } from '../../types';
 import { User } from '../user/entities/user.entity';
 import { MailService } from '../mail/mail.service';
-import { MailModule } from '../mail/mail.module';
 
 describe('AuthController', () => {
   let controller: AuthController;

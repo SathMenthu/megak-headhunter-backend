@@ -5,9 +5,17 @@ import { UserService } from '../user/user.service';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { User } from '../user/entities/user.entity';
 import { AuthLoginData, RoleEnum } from '../../types';
+import { MailService } from '../mail/mail.service';
 
 describe('AuthService', () => {
   let service: AuthService;
+
+  const mockMailService = {};
+
+  const mailServiceProvider = {
+    provide: MailService,
+    useValue: mockMailService,
+  };
 
   const mockUser = new User();
   mockUser.id = 'abc';
@@ -31,7 +39,12 @@ describe('AuthService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AuthService, UserService, UtilitiesService],
+      providers: [
+        AuthService,
+        UserService,
+        UtilitiesService,
+        mailServiceProvider,
+      ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
