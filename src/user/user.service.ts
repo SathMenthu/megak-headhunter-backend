@@ -336,15 +336,14 @@ export class UserService {
         newUser.activationLink = uuid();
         await newUser.save();
 
-        const url = UserService.createUrlsSentToStudents(
+        const oneUser: UrlAndEmailToSend = UserService.createUrlsSentToStudents(
           newUser,
           'confirm-registration',
           'id',
           'token',
         );
 
-        //@TODO SEND EMAIL
-
+        await this.sendInvitationEmail(oneUser);
         return {
           message: `User was successfully created.`,
           isSuccess: true,
