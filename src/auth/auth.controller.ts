@@ -6,6 +6,8 @@ import {
   UseGuards,
   Get,
   Req,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
@@ -38,6 +40,9 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @Get('/me')
   findMe(@Req() request: { user: User }) {
+    if (request.user.accountBlocked) {
+      throw new HttpException('UNAUTHORIZED', HttpStatus.UNAUTHORIZED);
+    }
     return this.authService.me(request.user);
   }
 }
