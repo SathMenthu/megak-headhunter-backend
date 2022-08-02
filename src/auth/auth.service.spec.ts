@@ -30,6 +30,7 @@ describe('AuthService', () => {
     cookie: jest.fn(x => ({
       json: jest.fn(y => y),
     })),
+    clearCookie: jest.fn(x => x),
   } as unknown as Response;
 
   const errorResponse = {
@@ -90,6 +91,18 @@ describe('AuthService', () => {
       };
 
       expect(await service.login(loginDto, responseMock)).toEqual(result);
+    });
+  });
+
+  describe('logout', () => {
+    it('should logout user', async () => {
+      jest.spyOn(User.prototype, 'save').mockResolvedValue(new User());
+      const result = {
+        isSuccess: true,
+        message: expect.any(String),
+      };
+
+      expect(await service.logout(mockUser, responseMock)).toEqual(result);
     });
   });
 });
