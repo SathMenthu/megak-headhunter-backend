@@ -3,6 +3,7 @@ import {
   EditedUserData,
   FindUserResponse,
   FindUsersResponse,
+  ManuallyCreatedUser,
   RoleEnum,
   UserBasicData,
 } from 'types';
@@ -70,14 +71,13 @@ describe('UserController', () => {
     ),
   };
 
-  const user = {
+  const user: ManuallyCreatedUser = {
     email: 'test@example.com',
-    password: 'test',
     firstName: 'Test_Name',
     lastName: 'Test_Name',
-    accountBlocked: true,
-    avatar: '',
     permission: RoleEnum.STUDENT,
+    maxReservedStudents: null,
+    company: null,
   };
 
   beforeEach(async () => {
@@ -125,7 +125,9 @@ describe('UserController', () => {
         email: expect.any(String),
         firstName: expect.any(String),
         lastName: expect.any(String),
-        permissions: RoleEnum.STUDENT,
+        accountBlocked: true,
+        avatar: '',
+        permission: RoleEnum.STUDENT,
       },
     };
 
@@ -152,7 +154,9 @@ describe('UserController', () => {
         email: expect.any(String),
         firstName: expect.any(String),
         lastName: expect.any(String),
-        permissions: RoleEnum.STUDENT,
+        accountBlocked: true,
+        avatar: '',
+        permission: RoleEnum.STUDENT,
       },
     };
 
