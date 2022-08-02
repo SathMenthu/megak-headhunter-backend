@@ -57,6 +57,12 @@ export class AuthService {
           isSuccess: false,
         });
       }
+      if (user.accountBlocked) {
+        return response.json({
+          message: 'Account is not activated.',
+          isSuccess: false,
+        });
+      }
       const token = this.createToken(await this.generateToken(user));
 
       return response
