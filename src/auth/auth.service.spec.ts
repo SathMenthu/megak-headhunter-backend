@@ -24,6 +24,8 @@ describe('AuthService', () => {
   mockUser.firstName = 'Test_Firstname';
   mockUser.lastName = 'Test_Lastname';
   mockUser.permission = RoleEnum.STUDENT;
+  mockUser.avatar = 'http://test.com';
+  mockUser.accountBlocked = false;
 
   const responseMock = {
     json: jest.fn(x => x),
@@ -103,6 +105,22 @@ describe('AuthService', () => {
       };
 
       expect(await service.logout(mockUser, responseMock)).toEqual(result);
+    });
+  });
+
+  describe('me', () => {
+    it('should return user data', async () => {
+      const result = {
+        id: mockUser.id,
+        email: mockUser.email,
+        firstName: mockUser.firstName,
+        lastName: mockUser.lastName,
+        permission: mockUser.permission,
+        avatar: mockUser.avatar,
+        accountBlocked: mockUser.accountBlocked,
+      };
+
+      expect(await service.me(mockUser)).toEqual(result);
     });
   });
 });
