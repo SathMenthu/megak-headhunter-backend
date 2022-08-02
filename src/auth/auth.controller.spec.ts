@@ -6,9 +6,18 @@ import { UserService } from '../user/user.service';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { AuthLoginData, RoleEnum } from '../../types';
 import { User } from '../user/entities/user.entity';
+import { MailService } from '../mail/mail.service';
+import { MailModule } from '../mail/mail.module';
 
 describe('AuthController', () => {
   let controller: AuthController;
+
+  const mockMailService = {};
+
+  const mailServiceProvider = {
+    provide: MailService,
+    useValue: mockMailService,
+  };
 
   const mockUser = new User();
   mockUser.id = 'abc';
@@ -53,7 +62,12 @@ describe('AuthController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
-      providers: [AuthService, UserService, UtilitiesService],
+      providers: [
+        AuthService,
+        UserService,
+        UtilitiesService,
+        mailServiceProvider,
+      ],
     })
       .overrideProvider(AuthService)
       .useValue(mockAuthService)
