@@ -599,14 +599,25 @@ export class UserService {
   }
 
   async closeStudentAccount(id: string) {
-    const foundStudent = await User.findOneBy({ id });
-    foundStudent.studentStatus = StudentStatus.HIRED;
-    foundStudent.accountBlocked = true;
-    await foundStudent.save();
-    const foundStudent2 = await User.findOneBy({ id });
-    return {
-      isSuccess: true,
-      message: 'naura',
-    };
+    try {
+      const foundStudent = await User.findOneBy({ id });
+      if (foundStudent) {
+        foundStudent.studentStatus = StudentStatus.HIRED;
+        foundStudent.accountBlocked = true;
+        await foundStudent.save();
+
+        return {
+          isSuccess: true,
+          message: 'User account has been successfully closed.',
+        };
+      } else {
+        throw new Error('No User Found');
+      }
+    } catch (error) {
+      return {
+        isSuccess: true,
+        message: error.message,
+      };
+    }
   }
 }
