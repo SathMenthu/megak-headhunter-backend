@@ -54,11 +54,13 @@ export interface MinimalInformationToCreateEmail {
   email: string;
   activationLink?: string;
   resetPasswordLink?: string;
+  permission: RoleEnum;
 }
 
 export interface UrlAndEmailToSend {
   url: string;
   email: string;
+  permission: RoleEnum;
 }
 
 export interface EditedUserData {

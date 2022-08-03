@@ -51,11 +51,12 @@ export class UserService {
   }
 
   userToCreateEmailUrls(user: User): MinimalInformationToCreateEmail {
-    const { id, email, activationLink } = user;
+    const { id, email, activationLink, permission } = user;
     return {
       id,
       email,
       activationLink,
+      permission,
     };
   }
 
@@ -84,6 +85,7 @@ export class UserService {
           id: newStudent.id,
           email: newStudent.email,
           activationLink: newStudent.activationLink,
+          permission: newStudent.permission,
         };
       }
       return null;
@@ -128,19 +130,20 @@ export class UserService {
     return null;
   }
 
-  private static createUrlsSentToStudents(
-    studentData: MinimalInformationToCreateEmail,
+  private static createUrlsSentToUsers(
+    userData: MinimalInformationToCreateEmail,
     apiString: string,
     firstParamName: string,
     secondParamName: string,
   ): UrlAndEmailToSend {
     return {
       url: `${mainConfigInfo.yourDomainName}/${apiString}?${firstParamName}=${
-        studentData.id
+        userData.id
       }&${secondParamName}=${
-        studentData.activationLink || studentData.resetPasswordLink
+        userData.activationLink || userData.resetPasswordLink
       }`,
-      email: studentData.email,
+      email: userData.email,
+      permission: userData.permission,
     };
   }
 
@@ -199,9 +202,10 @@ export class UserService {
           id: user.id,
           email: user.email,
           resetPasswordLink: uuid(),
+          permission: user.permission,
         };
 
-        const newPasswordUrlAndEmail = UserService.createUrlsSentToStudents(
+        const newPasswordUrlAndEmail = UserService.createUrlsSentToUsers(
           studentData,
           'retrieve-password',
           'id',
@@ -292,7 +296,7 @@ export class UserService {
         newUser.activationLink = uuid();
         await newUser.save();
 
-        const oneUser: UrlAndEmailToSend = UserService.createUrlsSentToStudents(
+        const oneUser: UrlAndEmailToSend = UserService.createUrlsSentToUsers(
           newUser,
           'confirm-registration',
           'id',
@@ -349,7 +353,7 @@ export class UserService {
       ).filter(student => student !== null);
 
       const generatedUrlsToRegisterWithEmails = studentsAddedToDb.map(student =>
-        UserService.createUrlsSentToStudents(
+        UserService.createUrlsSentToUsers(
           student,
           'confirm-registration',
           'id',

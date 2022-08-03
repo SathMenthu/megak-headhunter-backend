@@ -23,6 +23,7 @@ import {
   UserFilters,
 } from 'types';
 import { AuthGuard } from '@nestjs/passport';
+import { AdminRoleGuard } from 'src/guards/admin-role.guard';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
@@ -36,7 +37,8 @@ export class UserController {
   findOne(@Param('id') id: string): Promise<FindUserResponse> {
     return this.userService.findOne(id);
   }
-  @UseGuards(AuthGuard('jwt'))
+
+  @UseGuards(AuthGuard('jwt'), AdminRoleGuard)
   @Post('/add-many-students')
   @UseInterceptors(FileInterceptor('file'))
   addManyStudents(
