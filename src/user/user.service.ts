@@ -36,6 +36,8 @@ import { UtilitiesService } from '../utilities/utilities.service';
 import { User } from './entities/user.entity';
 import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
 import { compareArrays } from './helpers/compare.arrays';
+import { StudentStatus } from '../../types/enums/student.status.enum';
+
 
 @Injectable()
 export class UserService {
@@ -662,18 +664,21 @@ export class UserService {
     try {
       const foundStudent = await User.findOneBy({ id });
       if (foundStudent) {
+        foundStudent.studentStatus = StudentStatus.HIRED;
         foundStudent.accountBlocked = true;
-        await foundStudent.save;
+        await foundStudent.save();
+
         return {
           isSuccess: true,
-          message: 'Student account has been successfully closed',
+          message: 'User account has been successfully closed.',
         };
+      } else {
+        throw new Error('No User Found');
       }
-      throw new Error();
     } catch (error) {
       return {
         isSuccess: true,
-        message: 'An error occurred while closing the student account',
+        message: error.message,
       };
     }
   }

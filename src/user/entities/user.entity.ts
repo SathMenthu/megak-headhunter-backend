@@ -83,7 +83,7 @@ export class User extends BaseEntity implements UserBasicData {
     type: 'enum',
     enum: StudentStatus,
     nullable: true,
-    default: null,
+    default: StudentStatus.AVAILABLE,
   })
   studentStatus: StudentStatus | null;
 
