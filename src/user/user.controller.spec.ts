@@ -1,11 +1,13 @@
 import {
   DefaultResponse,
   EditedUserData,
+  FilterPayload,
   FindUserResponse,
   FindUsersResponse,
   ManuallyCreatedUser,
   RoleEnum,
   UserBasicData,
+  UserFilters,
 } from 'types';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
@@ -105,16 +107,32 @@ describe('UserController', () => {
     expect(mockUserService.create).toHaveBeenCalledWith(user);
   });
 
-  /* //TODO DO ZROBIENIA PAGINACJA + FILTRY
   it('should return users list', () => {
-    expect(controller.findAll()).toEqual({
+    const payload: FilterPayload<UserFilters> = {
+      page: 1,
+      limit: 2,
+      filters: {
+        search: null,
+        email: null,
+        firstName: null,
+        lastName: null,
+        permission: {
+          text: '',
+          value: null,
+        },
+        accountBlocked: null,
+        sortDirection: true,
+        sortTarget: '',
+      },
+    };
+
+    expect(controller.findAll(payload)).toEqual({
       isSuccess: true,
       message: expect.any(String),
       users: [],
     });
     expect(mockUserService.findAll).toHaveBeenCalled();
   });
-*/
 
   it('should return user', () => {
     const result = {
