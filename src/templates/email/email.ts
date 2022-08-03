@@ -14,7 +14,7 @@ export const createInvitationEmailHTML = (
     <p>Cieszymy się, że masz szansę podjąć ten krok, przecież po to w czerwcu 2021 r.${
       userData.permission !== 'HR' ?? ' wspólnie'
     } zaczynaliśmy podróż o nazwie MegaK!</p>
-    <h4>Jeśli chcesz zapisać się do naszego systemu, w charakterze ${
+    <h4>Jeśli chcesz zapisać się do naszego systemu w charakterze ${
       userData.permission === 'HR'
         ? 'łowcy talentów'
         : 'osoby poszukującej pracy w IT'

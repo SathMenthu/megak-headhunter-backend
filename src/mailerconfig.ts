@@ -2,22 +2,18 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { mailConfig } from '../config/config';
 
 export = {
-  /** ------------------- localhost - config ------------------- */
-  transport: `smtp://${mailConfig.mailUserName}:${mailConfig.mailPassword}@${mailConfig.mailHost}:${mailConfig.mailPort}`,
-
-  /** ---------------- Outside SMTP Server - config ------------------ */
-  // transport: {
-  //   host: mailConfig.mailHost,
-  //   secure: mailConfig.mailSecure,
-  //   port: mailConfig.mailPort,
-  //   auth: {
-  //     user: mailConfig.adminEmail,
-  //     pass: mailConfig.mailPassword,
-  //   },
-  //   tls: {
-  //     rejectUnauthorized: false,
-  //   },
-  // },
+  transport: {
+    host: mailConfig.mailHost,
+    secure: mailConfig.mailSecure,
+    port: mailConfig.mailPort,
+    auth: {
+      user: mailConfig.adminEmail,
+      pass: mailConfig.mailPassword,
+    },
+    tls: {
+      rejectUnauthorized: mailConfig.mailTlsRejectUnauthorized,
+    },
+  },
   defaults: {
     from: mailConfig.adminEmail,
   },
@@ -28,5 +24,5 @@ export = {
       strict: true,
     },
   },
-  preview: mailConfig.mailPreview, // If you want to see sent email
+  preview: mailConfig.mailPreview, // If you want to see sent emails
 };
