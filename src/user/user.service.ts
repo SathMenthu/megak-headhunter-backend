@@ -22,7 +22,6 @@ import {
 } from 'src/templates/email/email';
 import { Like, Not } from 'typeorm';
 import {
-  BooleanValidator,
   CityValidator,
   ExpectedContractTypeValidator,
   ExpectedTypeWorkValidator,
@@ -36,6 +35,7 @@ import { mainConfigInfo, papaParseConfig } from '../../config/config';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { User } from './entities/user.entity';
 import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
+import { compareArrays } from './helpers/compare.arrays';
 
 @Injectable()
 export class UserService {
@@ -62,7 +62,7 @@ export class UserService {
 
   private static async checkAndAddStudent(
     studentObj: ImportedStudentData,
-  ): Promise<MinimalInformationToCreateEmail | null> {
+  ): Promise<MinimalInformationToCreateEmail | null | true> {
     try {
       const foundUser = await User.findOneBy({ email: studentObj.email });
 
@@ -87,8 +87,39 @@ export class UserService {
           activationLink: newStudent.activationLink,
           permission: newStudent.permission,
         };
+      } else {
+        let ifSomethingChanged = null;
+        Object.keys(studentObj).forEach(key => {
+          if (key === 'bonusProjectUrls') {
+            if (
+              !compareArrays(
+                foundUser.bonusProjectUrls,
+                studentObj.bonusProjectUrls,
+              )
+            ) {
+              foundUser.bonusProjectUrls = studentObj.bonusProjectUrls;
+              ifSomethingChanged = true;
+            }
+          } else if (
+            foundUser[key] !== studentObj[key] &&
+            key !== 'email' &&
+            key !== 'bonusProjectUrls'
+          ) {
+            foundUser[key] = studentObj[key];
+            ifSomethingChanged = true;
+          }
+        });
+
+        if (ifSomethingChanged) {
+          await foundUser.save();
+        }
+
+        /** ------------ Could change it by Conditionall operator but Kuba wanted to change only those variables, which changed comparing to User in DB. ---------------*/
+        // That doesn't make to much sense, because TypeORM sends it to DB as a whole object
+        // but now i know if something changed
+        // I used it as a chance and thanks to that the answer messages to tells how many object were updated
+        return ifSomethingChanged;
       }
-      return null;
     } catch (e) {
       return null;
     }
@@ -332,15 +363,22 @@ export class UserService {
           });
         },
       });
-
+      const allEmails = [];
       /** ------------ IMPORTANT TO FILTER CONSERVATIVE OR AGGRESSIVE -------------- */
       const filteredStudents = data.filter((student: ImportedStudentData) => {
         const values = Object.values(student);
-        // If we have null anywhere, that means the record is not good
-        return !values.includes(null);
+
+        if (allEmails.includes(student.email)) {
+          return false;
+        }
+        if (values.includes(null)) {
+          return false;
+        }
+        allEmails.push(student.email);
+        return true;
       }) as ImportedStudentData[];
 
-      const studentsAddedToDb = (
+      const arrayOfStudentsAfterConnectingToDb = (
         await Promise.all(
           filteredStudents.map(async student => {
             try {
@@ -352,13 +390,18 @@ export class UserService {
         )
       ).filter(student => student !== null);
 
-      const generatedUrlsToRegisterWithEmails = studentsAddedToDb.map(student =>
-        UserService.createUrlsSentToUsers(
-          student,
-          'confirm-registration',
-          'id',
-          'token',
-        ),
+      const studentsCreatedInDB = arrayOfStudentsAfterConnectingToDb.filter(
+        student => student !== true,
+      ) as MinimalInformationToCreateEmail[];
+
+      const generatedUrlsToRegisterWithEmails = studentsCreatedInDB.map(
+        student =>
+          UserService.createUrlsSentToUsers(
+            student,
+            'confirm-registration',
+            'id',
+            'token',
+          ),
       );
 
       const sentEmails = (
@@ -374,9 +417,22 @@ export class UserService {
       ).filter(obj => obj);
 
       return {
-        message: `Created ${studentsAddedToDb.length} new users out of ${
-          data.length - 1
-        } positions. We have sent ${sentEmails.length} confirmation emails.`,
+        message: `Created ${studentsCreatedInDB.length} new users ${
+          arrayOfStudentsAfterConnectingToDb.length > 0
+            ? `and updated ${
+                arrayOfStudentsAfterConnectingToDb.length -
+                  studentsCreatedInDB.length >=
+                0
+                  ? `${
+                      arrayOfStudentsAfterConnectingToDb.length -
+                      studentsCreatedInDB.length
+                    }`
+                  : '0'
+              } old users `
+            : ''
+        }out of ${data.length - 1} positions. System have sent ${
+          sentEmails.length
+        } confirmation emails.`,
         isSuccess: true,
       };
     } catch (e) {
