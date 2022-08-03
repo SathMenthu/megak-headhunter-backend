@@ -59,6 +59,11 @@ export class UserController {
     return this.userService.findUsersForHR(payload);
   }
 
+  @Post('/reserve-user/:id')
+  reserveUser(@Param('id') id: string, @Body() payload: FilteredUser) {
+    return this.userService.reserveUser(id, payload);
+  }
+
   @Post('/forgot-pass')
   findOneAndSendEmail(
     @Body() emailObj: ForgotPasswordDto,

@@ -638,12 +638,18 @@ export class UserService {
         where: [
           {
             email: Like(`%${filters.search}%`) || Not('0xError404'),
+            studentStatus: studentStatus,
+            permission: RoleEnum.STUDENT,
           },
           {
             firstName: Like(`%${filters.search}%`) || Not('0xError404'),
+            studentStatus: studentStatus,
+            permission: RoleEnum.STUDENT,
           },
           {
             lastName: Like(`%${filters.search}%`) || Not('0xError404'),
+            studentStatus: studentStatus,
+            permission: RoleEnum.STUDENT,
           },
         ],
         take: limit,
@@ -663,6 +669,26 @@ export class UserService {
       return {
         message: 'An error occurred while downloading the user list',
         isSuccess: false,
+      };
+    }
+  }
+
+  async reserveUser(id: string, payload: FilteredUser) {
+    try {
+      const foundedStudent = await User.findOneByOrFail({ id });
+      const foundHr = await User.findOneByOrFail({ id: payload.id });
+      foundedStudent.studentStatus = StudentStatus.BUSY;
+      foundedStudent.assignedHR = foundHr;
+      await foundedStudent.save();
+
+      return {
+        isSuccess: true,
+        message: 'The student has been successfully booked.',
+      };
+    } catch (e) {
+      return {
+        isSuccess: true,
+        message: 'An error occurred while booking the student.',
       };
     }
   }
