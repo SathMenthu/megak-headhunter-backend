@@ -28,6 +28,8 @@ export interface ManuallyCreatedUser {
 
 export type FilteredUser = Omit<Student & Hr, 'password'>;
 
+export type ConfirmRegisterUserDto = Student & Hr;
+
 export interface FindUserResponse extends DefaultResponse {
   user?: FilteredUser;
 }
