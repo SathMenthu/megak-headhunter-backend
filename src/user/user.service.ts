@@ -5,8 +5,10 @@ import {
   DefaultResponse,
   FilteredUser,
   FilterPayload,
+  FilterPayloadForHr,
   FindUserResponse,
   FindUsersResponse,
+  HrFilters,
   ImportedStudentData,
   ManuallyCreatedUser,
   MinimalInformationToCreateEmail,
@@ -621,6 +623,46 @@ export class UserService {
       return {
         isSuccess: true,
         message: error.message,
+      };
+    }
+  }
+
+  async findUsersForHR({
+    filters,
+    limit,
+    page,
+    studentStatus,
+  }: FilterPayloadForHr<HrFilters>) {
+    try {
+      const [results, total] = await User.findAndCount({
+        where: [
+          {
+            email: Like(`%${filters.search}%`) || Not('0xError404'),
+          },
+          {
+            firstName: Like(`%${filters.search}%`) || Not('0xError404'),
+          },
+          {
+            lastName: Like(`%${filters.search}%`) || Not('0xError404'),
+          },
+        ],
+        take: limit,
+        skip: (page - 1) * limit,
+        order: {
+          [filters.sortTarget]: filters.sortDirection ? 'DESC' : 'ASC',
+        },
+      });
+      results.map(user => this.baseUserFilter(user));
+      return {
+        users: results,
+        total,
+        message: 'The user list has been successfully downloaded',
+        isSuccess: true,
+      };
+    } catch (error) {
+      return {
+        message: 'An error occurred while downloading the user list',
+        isSuccess: false,
       };
     }
   }

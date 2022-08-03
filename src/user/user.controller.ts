@@ -17,8 +17,10 @@ import {
   DefaultResponse,
   FilteredUser,
   FilterPayload,
+  FilterPayloadForHr,
   FindUserResponse,
   FindUsersResponse,
+  HrFilters,
   ManuallyCreatedUser,
   UserFilters,
 } from 'types';
@@ -50,6 +52,11 @@ export class UserController {
   @Post('/check-register-link')
   checkRegisterLink(@Body() { id, token }: CheckRegisterDto) {
     return this.userService.checkRegisterLink(id, token);
+  }
+
+  @Post('/users-for-hr')
+  usersForHR(@Body() payload: FilterPayloadForHr<HrFilters>) {
+    return this.userService.findUsersForHR(payload);
   }
 
   @Post('/forgot-pass')

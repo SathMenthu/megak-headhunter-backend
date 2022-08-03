@@ -75,7 +75,6 @@ export interface EditedUserData {
 }
 
 export interface UserFilters extends BaseOfSort {
-  search: string | null;
   email: string | null;
   firstName: string | null;
   lastName: string | null;
@@ -86,8 +85,20 @@ export interface UserFilters extends BaseOfSort {
   accountBlocked: boolean | null;
 }
 
+export interface HrFilters extends BaseOfSort {
+  courseCompletion: number | null;
+  courseEngagement: number | null;
+  projectDegree: number | null;
+  teamProjectDegree: number | null;
+  expectedTypeWork: ExpectedTypeWorkEnum | null;
+  expectedContractType: ExpectedContractTypeEnum | null;
+  minSalary: number | null;
+  maxSalary: number | null;
+  canTakeApprenticeship: boolean | null;
+  monthsOfCommercialExp: number | null;
+}
+
 export interface AdminFilters extends BaseOfSort {
-  search: string | null;
   permission: {
     text: string;
     value: RoleEnum | null;
