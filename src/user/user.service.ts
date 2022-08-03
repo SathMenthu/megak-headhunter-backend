@@ -22,7 +22,6 @@ import {
 } from 'src/templates/email/email';
 import { Like, Not } from 'typeorm';
 import {
-  BooleanValidator,
   CityValidator,
   ExpectedContractTypeValidator,
   ExpectedTypeWorkValidator,
@@ -36,6 +35,7 @@ import { mainConfigInfo, papaParseConfig } from '../../config/config';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { User } from './entities/user.entity';
 import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
+import { StudentStatus } from '../../types/enums/student.status.enum';
 
 @Injectable()
 export class UserService {
@@ -599,22 +599,14 @@ export class UserService {
   }
 
   async closeStudentAccount(id: string) {
-    try {
-      const foundStudent = await User.findOneBy({ id });
-      if (foundStudent) {
-        foundStudent.accountBlocked = true;
-        await foundStudent.save;
-        return {
-          isSuccess: true,
-          message: 'Student account has been successfully closed',
-        };
-      }
-      throw new Error();
-    } catch (error) {
-      return {
-        isSuccess: true,
-        message: 'An error occurred while closing the student account',
-      };
-    }
+    const foundStudent = await User.findOneBy({ id });
+    foundStudent.studentStatus = StudentStatus.HIRED;
+    foundStudent.accountBlocked = true;
+    await foundStudent.save();
+    const foundStudent2 = await User.findOneBy({ id });
+    return {
+      isSuccess: true,
+      message: 'naura',
+    };
   }
 }
