@@ -78,6 +78,11 @@ describe('UserController', () => {
         message: 'test message',
       }),
     ),
+
+    blockTargetUser: jest.fn((id: string) => ({
+      isSuccess: true,
+      message: 'test message',
+    })),
   };
 
   const user: ManuallyCreatedUser = {
@@ -215,5 +220,15 @@ describe('UserController', () => {
       'abc',
       dtoPayload,
     );
+  });
+
+  it('should block user account', () => {
+    const result = {
+      isSuccess: true,
+      message: expect.any(String),
+    };
+
+    expect(controller.blockTargetUser('abc')).toEqual(result);
+    expect(mockUserService.blockTargetUser).toHaveBeenCalledWith('abc');
   });
 });
