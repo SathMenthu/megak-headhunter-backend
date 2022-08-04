@@ -71,6 +71,13 @@ describe('UserController', () => {
         },
       }),
     ),
+
+    resetPasswordForTargetUser: jest.fn(
+      (id: string, payload: { password: string }) => ({
+        isSuccess: true,
+        message: 'test message',
+      }),
+    ),
   };
 
   const user: ManuallyCreatedUser = {
@@ -191,5 +198,22 @@ describe('UserController', () => {
 
     expect(controller.update('abc', dto)).toEqual(result);
     expect(mockUserService.update).toHaveBeenCalledWith('abc', dto);
+  });
+
+  it('should reset password', () => {
+    const dtoPayload = {
+      password: 'test',
+    };
+
+    const result = {
+      isSuccess: true,
+      message: expect.any(String),
+    };
+
+    expect(controller.restartPassword('abc', dtoPayload)).toEqual(result);
+    expect(mockUserService.resetPasswordForTargetUser).toHaveBeenCalledWith(
+      'abc',
+      dtoPayload,
+    );
   });
 });
