@@ -4,9 +4,21 @@ export const createInvitationEmailHTML = (
   userData: UrlAndEmailToSend,
 ): string => `<div>
     <h1>Witamy w naszym systemie!</h1>
-    <p>Twój email: <strong>${userData.email}</strong> został dodany w naszej bazie jako email użytkownika naszego systemu.</p>
-    <p>Cieszymy się, że podejmujesz ten krok, przecież po to rok temu zaczynaliśmy podróż o nazwie MegaK!</p>
-    <h4>Jeśli chcesz zapisać się do naszego systemu, potwierdź rejestrację.</h4>
+    <p>Twój email: <strong>${
+      userData.email
+    }</strong> został dodany w naszej bazie jako email ${
+  userData.permission === 'HR'
+    ? 'osoby poszukującej pracy po naszym kursie'
+    : 'osoby poszukującej wartościowych pracowników w branży IT'
+}.</p>
+    <p>Cieszymy się, że masz szansę podjąć ten krok, przecież po to w czerwcu 2021 r.${
+      userData.permission !== 'HR' ?? ' wspólnie'
+    } zaczynaliśmy podróż o nazwie MegaK!</p>
+    <h4>Jeśli chcesz zapisać się do naszego systemu w charakterze ${
+      userData.permission === 'HR'
+        ? 'łowcy talentów'
+        : 'osoby poszukującej pracy w IT'
+    } potwierdź rejestrację.</h4>
     <a href='${userData.url}'>
         <button>Potwierdź rejestrację!</button>
     </a>
@@ -22,6 +34,11 @@ export const createForgotPasswordEmailHTML = (
     <h1>Zapomniałeś/aś hasła dla konta ${userData.email}?</h1>
     <p>Nic nie szkodzi, poniżej znajdziesz link, do jego odzyskiwania.</p>
     <p>Kliknij w niego, by ponownie cieszyć się systemem MegaK!</p>
+    <h5>${
+      userData.permission === 'HR'
+        ? 'Przed Tobą jeszcze całe tabuny idealnych kandydatur do oceny.'
+        : 'Przed Tobą świetlana przyszłość w branży IT.'
+    }</h5>
     <h4>Kliknij w link i odzyskaj hasło.</h4>
     <a href='${userData.url}'>
         <button>Odzyskaj Hasło!</button>

@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
   AdminFilters,
+  ConfirmRegisterUserDto,
   DefaultResponse,
   FilteredUser,
   FilterPayload,
@@ -11,9 +12,8 @@ import {
   MinimalInformationToCreateEmail,
   RoleEnum,
   UrlAndEmailToSend,
-  UserBasicData,
   UserFilters,
-} from '../types';
+} from 'types';
 import * as Papa from 'papaparse';
 import { v4 as uuid } from 'uuid';
 import {
@@ -22,7 +22,6 @@ import {
 } from 'src/templates/email/email';
 import { Like, Not } from 'typeorm';
 import {
-  BooleanValidator,
   CityValidator,
   ExpectedContractTypeValidator,
   ExpectedTypeWorkValidator,
@@ -31,12 +30,14 @@ import {
   NumberInRangeValidator,
   StudentStatusValidator,
 } from './helpers/user.validators';
-import { StudentBasicData } from '../types';
 import { MailService } from '../mail/mail.service';
 import { mainConfigInfo, papaParseConfig } from '../../config/config';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { User } from './entities/user.entity';
 import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
+import { compareArrays } from './helpers/compare.arrays';
+import { StudentStatus } from '../../types/enums/student.status.enum';
+
 
 @Injectable()
 export class UserService {
@@ -52,17 +53,18 @@ export class UserService {
   }
 
   userToCreateEmailUrls(user: User): MinimalInformationToCreateEmail {
-    const { id, email, activationLink } = user;
+    const { id, email, activationLink, permission } = user;
     return {
       id,
       email,
       activationLink,
+      permission,
     };
   }
 
   private static async checkAndAddStudent(
     studentObj: ImportedStudentData,
-  ): Promise<MinimalInformationToCreateEmail | null> {
+  ): Promise<MinimalInformationToCreateEmail | null | true> {
     try {
       const foundUser = await User.findOneBy({ email: studentObj.email });
 
@@ -85,9 +87,41 @@ export class UserService {
           id: newStudent.id,
           email: newStudent.email,
           activationLink: newStudent.activationLink,
+          permission: newStudent.permission,
         };
+      } else {
+        let ifSomethingChanged = null;
+        Object.keys(studentObj).forEach(key => {
+          if (key === 'bonusProjectUrls') {
+            if (
+              !compareArrays(
+                foundUser.bonusProjectUrls,
+                studentObj.bonusProjectUrls,
+              )
+            ) {
+              foundUser.bonusProjectUrls = studentObj.bonusProjectUrls;
+              ifSomethingChanged = true;
+            }
+          } else if (
+            foundUser[key] !== studentObj[key] &&
+            key !== 'email' &&
+            key !== 'bonusProjectUrls'
+          ) {
+            foundUser[key] = studentObj[key];
+            ifSomethingChanged = true;
+          }
+        });
+
+        if (ifSomethingChanged) {
+          await foundUser.save();
+        }
+
+        /** ------------ Could change it by Conditionall operator but Kuba wanted to change only those variables, which changed comparing to User in DB. ---------------*/
+        // That doesn't make to much sense, because TypeORM sends it to DB as a whole object
+        // but now i know if something changed
+        // I used it as a chance and thanks to that the answer messages to tells how many object were updated
+        return ifSomethingChanged;
       }
-      return null;
     } catch (e) {
       return null;
     }
@@ -129,19 +163,20 @@ export class UserService {
     return null;
   }
 
-  private static createUrlsSentToStudents(
-    studentData: MinimalInformationToCreateEmail,
+  private static createUrlsSentToUsers(
+    userData: MinimalInformationToCreateEmail,
     apiString: string,
     firstParamName: string,
     secondParamName: string,
   ): UrlAndEmailToSend {
     return {
       url: `${mainConfigInfo.yourDomainName}/${apiString}?${firstParamName}=${
-        studentData.id
+        userData.id
       }&${secondParamName}=${
-        studentData.activationLink || studentData.resetPasswordLink
+        userData.activationLink || userData.resetPasswordLink
       }`,
-      email: studentData.email,
+      email: userData.email,
+      permission: userData.permission,
     };
   }
 
@@ -200,9 +235,10 @@ export class UserService {
           id: user.id,
           email: user.email,
           resetPasswordLink: uuid(),
+          permission: user.permission,
         };
 
-        const newPasswordUrlAndEmail = UserService.createUrlsSentToStudents(
+        const newPasswordUrlAndEmail = UserService.createUrlsSentToUsers(
           studentData,
           'retrieve-password',
           'id',
@@ -241,32 +277,6 @@ export class UserService {
     } catch (e) {
       return {
         message: 'User not found.',
-        isSuccess: false,
-      };
-    }
-  }
-
-  async update(
-    id: string,
-    { email, password, permission }: UserBasicData,
-  ): Promise<FindUserResponse> {
-    try {
-      const user = await User.findOneByOrFail({ id });
-      user.email = email || user.email;
-      user.password = password
-        ? this.utilitiesService.hashPassword(password)
-        : user.password;
-      user.permission = permission || user.permission;
-      await user.save();
-
-      return {
-        message: `User data successfully changed for user: ${user.email}.`,
-        user: this.baseUserFilter(user),
-        isSuccess: true,
-      };
-    } catch (e) {
-      return {
-        message: 'An error occurred while editing the user data.',
         isSuccess: false,
       };
     }
@@ -319,7 +329,7 @@ export class UserService {
         newUser.activationLink = uuid();
         await newUser.save();
 
-        const oneUser: UrlAndEmailToSend = UserService.createUrlsSentToStudents(
+        const oneUser: UrlAndEmailToSend = UserService.createUrlsSentToUsers(
           newUser,
           'confirm-registration',
           'id',
@@ -355,34 +365,45 @@ export class UserService {
           });
         },
       });
-
+      const allEmails = [];
       /** ------------ IMPORTANT TO FILTER CONSERVATIVE OR AGGRESSIVE -------------- */
       const filteredStudents = data.filter((student: ImportedStudentData) => {
         const values = Object.values(student);
-        // If we have null anywhere, that means the record is not good
-        return !values.includes(null);
+
+        if (allEmails.includes(student.email)) {
+          return false;
+        }
+        if (values.includes(null)) {
+          return false;
+        }
+        allEmails.push(student.email);
+        return true;
       }) as ImportedStudentData[];
 
-      const studentsAddedToDb = (
+      const arrayOfStudentsAfterConnectingToDb = (
         await Promise.all(
           filteredStudents.map(async student => {
             try {
               return await UserService.checkAndAddStudent(student);
             } catch (e) {
-              console.error(e.message);
               return null;
             }
           }),
         )
       ).filter(student => student !== null);
 
-      const generatedUrlsToRegisterWithEmails = studentsAddedToDb.map(student =>
-        UserService.createUrlsSentToStudents(
-          student,
-          'confirm-registration',
-          'id',
-          'token',
-        ),
+      const studentsCreatedInDB = arrayOfStudentsAfterConnectingToDb.filter(
+        student => student !== true,
+      ) as MinimalInformationToCreateEmail[];
+
+      const generatedUrlsToRegisterWithEmails = studentsCreatedInDB.map(
+        student =>
+          UserService.createUrlsSentToUsers(
+            student,
+            'confirm-registration',
+            'id',
+            'token',
+          ),
       );
 
       const sentEmails = (
@@ -398,13 +419,25 @@ export class UserService {
       ).filter(obj => obj);
 
       return {
-        message: `Created ${studentsAddedToDb.length} new users out of ${
-          data.length - 1
-        } positions. We have sent ${sentEmails.length} confirmation emails.`,
+        message: `Created ${studentsCreatedInDB.length} new users ${
+          arrayOfStudentsAfterConnectingToDb.length > 0
+            ? `and updated ${
+                arrayOfStudentsAfterConnectingToDb.length -
+                  studentsCreatedInDB.length >=
+                0
+                  ? `${
+                      arrayOfStudentsAfterConnectingToDb.length -
+                      studentsCreatedInDB.length
+                    }`
+                  : '0'
+              } old users `
+            : ''
+        }out of ${data.length - 1} positions. System have sent ${
+          sentEmails.length
+        } confirmation emails.`,
         isSuccess: true,
       };
     } catch (e) {
-      console.error(e);
       return {
         message: 'Could not create new users.',
         isSuccess: false,
@@ -439,9 +472,16 @@ export class UserService {
     }
   }
 
-  async registerStudent(
+  async editUser(
     foundedUser: User,
     {
+      phoneNumber,
+      password,
+      firstName,
+      lastName,
+      company,
+      maxReservedStudents,
+      permission,
       studentStatus,
       portfolioUrls,
       projectUrls,
@@ -460,69 +500,95 @@ export class UserService {
       projectDegree,
       teamProjectDegree,
       bonusProjectUrls,
-    }: Partial<StudentBasicData>,
+      githubUsername,
+    }: Partial<ConfirmRegisterUserDto>,
   ): Promise<DefaultResponse> {
     try {
-      // Student Status
-      foundedUser.studentStatus =
-        StudentStatusValidator(studentStatus) || foundedUser.studentStatus;
-      // Portfolio Urls
-      foundedUser.portfolioUrls =
-        LinksValidator(portfolioUrls) || foundedUser.portfolioUrls;
-      // Project Urls
-      foundedUser.projectUrls =
-        LinksValidator(projectUrls) || foundedUser.projectUrls;
-      // Bio
-      foundedUser.bio = bio || foundedUser.bio;
-      // Expected Type Work
-      foundedUser.expectedTypeWork =
-        ExpectedTypeWorkValidator(expectedTypeWork) ||
-        foundedUser.expectedTypeWork;
-      // Target Work City
-      foundedUser.targetWorkCity =
-        CityValidator(targetWorkCity) || foundedUser.targetWorkCity;
-      // Expected Contract Type
-      foundedUser.expectedContractType =
-        ExpectedContractTypeValidator(expectedContractType) ||
-        foundedUser.expectedContractType;
-      // Expected Salary
-      foundedUser.expectedSalary =
-        NumberInRangeValidator(expectedSalary, 1, 9999999) ||
-        foundedUser.expectedSalary;
-      // Can Take Apprenticeship
-      foundedUser.canTakeApprenticeship =
-        canTakeApprenticeship === 'null' && 'undefined'
-          ? foundedUser.canTakeApprenticeship
-          : BooleanValidator(canTakeApprenticeship);
-      // Month of Commercial Experience
-      foundedUser.monthsOfCommercialExp =
-        NumberInRangeValidator(monthsOfCommercialExp, 1, 999) ||
-        foundedUser.monthsOfCommercialExp;
-      // Education
-      foundedUser.education = education || foundedUser.education;
-      // Work Experience
-      foundedUser.workExperience = workExperience || foundedUser.workExperience;
-      // Courses
-      foundedUser.courses = courses || foundedUser.courses;
-      // Course Completion
-      foundedUser.courseCompletion =
-        NumberInRangeValidator(courseCompletion, 1, 5) ||
-        foundedUser.courseCompletion;
-      // Course Engagement
-      foundedUser.courseEngagement =
-        NumberInRangeValidator(courseEngagement, 1, 5) ||
-        foundedUser.courseEngagement;
-      // Project Degree
-      foundedUser.projectDegree =
-        NumberInRangeValidator(projectDegree, 1, 5) ||
-        foundedUser.projectDegree;
-      // Team Project Degree
-      foundedUser.teamProjectDegree =
-        NumberInRangeValidator(teamProjectDegree, 1, 5) ||
-        foundedUser.teamProjectDegree;
-      // Bonus Project Urls
-      foundedUser.bonusProjectUrls =
-        LinksValidator(bonusProjectUrls) || foundedUser.bonusProjectUrls;
+      foundedUser.firstName = firstName;
+      foundedUser.lastName = lastName;
+      foundedUser.password = password
+        ? this.utilitiesService.hashPassword(password)
+        : foundedUser.password;
+      if (permission === 'STUDENT') {
+        //@TODO check validation - can no works
+        // Github and avatar
+        foundedUser.githubUsername =
+          LinksValidator([`https://github.com/${githubUsername}/`]).length &&
+          githubUsername;
+
+        if (foundedUser.githubUsername) {
+          foundedUser.avatar = decodeURIComponent(
+            LinksValidator([`https://github.com/${githubUsername}.png`])[0],
+          );
+        }
+
+        // Student Status
+        foundedUser.studentStatus =
+          StudentStatusValidator(studentStatus) || foundedUser.studentStatus;
+        // Portfolio Urls
+        foundedUser.portfolioUrls =
+          LinksValidator(portfolioUrls) || foundedUser.portfolioUrls;
+        // Project Urls
+        foundedUser.projectUrls =
+          LinksValidator(projectUrls) || foundedUser.projectUrls;
+        // Bio
+        foundedUser.bio = bio || foundedUser.bio;
+        // Expected Type Work
+        foundedUser.expectedTypeWork =
+          ExpectedTypeWorkValidator(expectedTypeWork) ||
+          foundedUser.expectedTypeWork;
+        // Target Work City
+        foundedUser.targetWorkCity =
+          CityValidator(targetWorkCity) || foundedUser.targetWorkCity;
+        // Expected Contract Type
+        foundedUser.expectedContractType =
+          ExpectedContractTypeValidator(expectedContractType) ||
+          foundedUser.expectedContractType;
+        // Expected Salary
+        foundedUser.expectedSalary =
+          NumberInRangeValidator(expectedSalary, 1, 9999999) ||
+          foundedUser.expectedSalary;
+        // Can Take Apprenticeship
+        //@TODO add validation
+        foundedUser.canTakeApprenticeship = canTakeApprenticeship;
+        // Month of Commercial Experience
+        foundedUser.monthsOfCommercialExp =
+          NumberInRangeValidator(monthsOfCommercialExp, 1, 999) ||
+          foundedUser.monthsOfCommercialExp;
+        // Education
+        foundedUser.education = education || foundedUser.education;
+        // Work Experience
+        foundedUser.workExperience =
+          workExperience || foundedUser.workExperience;
+        // Courses
+        foundedUser.courses = courses || foundedUser.courses;
+        // Course Completion
+        foundedUser.courseCompletion =
+          NumberInRangeValidator(courseCompletion, 1, 5) ||
+          foundedUser.courseCompletion;
+        // Course Engagement
+        foundedUser.courseEngagement =
+          NumberInRangeValidator(courseEngagement, 1, 5) ||
+          foundedUser.courseEngagement;
+        // Project Degree
+        foundedUser.projectDegree =
+          NumberInRangeValidator(projectDegree, 1, 5) ||
+          foundedUser.projectDegree;
+        // Team Project Degree
+        foundedUser.teamProjectDegree =
+          NumberInRangeValidator(teamProjectDegree, 1, 5) ||
+          foundedUser.teamProjectDegree;
+        // Bonus Project Urls
+        foundedUser.bonusProjectUrls =
+          LinksValidator(bonusProjectUrls) || foundedUser.bonusProjectUrls;
+
+        //@TODO add phone validation
+        foundedUser.phoneNumber = phoneNumber || foundedUser.phoneNumber;
+      } else if (permission === 'HR') {
+        foundedUser.company = company || '';
+        foundedUser.maxReservedStudents =
+          NumberInRangeValidator(maxReservedStudents, 1, 999) || 1;
+      }
       // Clear Token
       foundedUser.activationLink = null;
       foundedUser.accountBlocked = false;
@@ -530,12 +596,13 @@ export class UserService {
       await foundedUser.save();
       return {
         isSuccess: true,
-        message: 'User has been successfully registered.',
+        message: 'User has been successfully updated.',
       };
     } catch (error) {
+      console.log(error);
       return {
         isSuccess: false,
-        message: 'An error occurred while registering the user.',
+        message: 'An error occurred while updated the user.',
       };
     }
   }
@@ -589,6 +656,29 @@ export class UserService {
       return {
         isSuccess: false,
         message: 'Link has expired and is no longer up to date.',
+      };
+    }
+  }
+
+  async closeStudentAccount(id: string) {
+    try {
+      const foundStudent = await User.findOneBy({ id });
+      if (foundStudent) {
+        foundStudent.studentStatus = StudentStatus.HIRED;
+        foundStudent.accountBlocked = true;
+        await foundStudent.save();
+
+        return {
+          isSuccess: true,
+          message: 'User account has been successfully closed.',
+        };
+      } else {
+        throw new Error('No User Found');
+      }
+    } catch (error) {
+      return {
+        isSuccess: true,
+        message: error.message,
       };
     }
   }

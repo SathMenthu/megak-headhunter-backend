@@ -15,13 +15,11 @@ export const ExpectedTypeWorkValidator = (
 
 export const LinksValidator = (arrayOfLinks: Array<string>) =>
   arrayOfLinks &&
-  arrayOfLinks
-    .filter(async link => urlExists(link, (err, exists) => exists))
-    .map(link => encodeURIComponent(link));
+  arrayOfLinks.filter(async link => urlExists(link, (err, exists) => exists));
 
 export const CityValidator = (city: string) =>
   RegExp(
-    "^(?:[A-Za-z]{2,}(?:(.s|'ss|s?-s?|s)?(?=[A-Za-z]+))){1,2}(?:[A-Za-z]+)?$",
+    "^(?:[A-Za-zżźćńółęąśŻŹĆĄŚĘŁÓŃ]{2,}(?:(.s|'ss|s?-s?|s)?(?=[A-Za-z]+))){1,2}(?:[A-Za-z]+)?$",
   ).test(city) && city;
 
 export const MailValidator = (email: string) =>

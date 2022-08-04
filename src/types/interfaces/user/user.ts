@@ -28,6 +28,8 @@ export interface ManuallyCreatedUser {
 
 export type FilteredUser = Omit<Student & Hr, 'password'>;
 
+export type ConfirmRegisterUserDto = Student & Hr;
+
 export interface FindUserResponse extends DefaultResponse {
   user?: FilteredUser;
 }
@@ -52,11 +54,13 @@ export interface MinimalInformationToCreateEmail {
   email: string;
   activationLink?: string;
   resetPasswordLink?: string;
+  permission: RoleEnum;
 }
 
 export interface UrlAndEmailToSend {
   url: string;
   email: string;
+  permission: RoleEnum;
 }
 
 export interface EditedUserData {

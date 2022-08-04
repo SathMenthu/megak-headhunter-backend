@@ -13,16 +13,17 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   CheckRegisterDto,
+  ConfirmRegisterUserDto,
   DefaultResponse,
   FilteredUser,
   FilterPayload,
   FindUserResponse,
   FindUsersResponse,
   ManuallyCreatedUser,
-  UserBasicData,
   UserFilters,
 } from '../types';
 import { AuthGuard } from '@nestjs/passport';
+import { AdminRoleGuard } from 'src/guards/admin-role.guard';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
@@ -36,7 +37,8 @@ export class UserController {
   findOne(@Param('id') id: string): Promise<FindUserResponse> {
     return this.userService.findOne(id);
   }
-  @UseGuards(AuthGuard('jwt'))
+
+  @UseGuards(AuthGuard('jwt'), AdminRoleGuard)
   @Post('/add-many-students')
   @UseInterceptors(FileInterceptor('file'))
   addManyStudents(
@@ -73,11 +75,12 @@ export class UserController {
 
   @UseGuards(AuthGuard('jwt'))
   @Patch('/:id')
-  update(
+  async update(
     @Param('id') id: string,
-    @Body() editedUserData: UserBasicData,
+    @Body() userData: ConfirmRegisterUserDto,
   ): Promise<FindUserResponse> {
-    return this.userService.update(id, editedUserData);
+    const foundedUser = await User.findOneBy({ id });
+    return this.userService.editUser(foundedUser, userData);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -102,8 +105,13 @@ export class UserController {
   ): Promise<DefaultResponse> {
     const foundedUser = await User.findOneBy({ activationLink });
     return foundedUser
-      ? this.userService.registerStudent(foundedUser, userData)
+      ? this.userService.editUser(foundedUser, userData)
       : { isSuccess: false, message: 'Link is no longer active' };
+  }
+
+  @Patch('/close-account/:id')
+  async closeStudentAccount(@Param('id') id: string): Promise<DefaultResponse> {
+    return this.userService.closeStudentAccount(id);
   }
 
   @UseGuards(AuthGuard('jwt'))

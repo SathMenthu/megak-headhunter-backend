@@ -55,7 +55,7 @@ export class User extends BaseEntity implements UserBasicData {
 
   @Column({
     default:
-      'https://www.deviantart.com/karmaanddestiny/art/Default-user-icon-4-858661084 ',
+      'https://cdn.pixabay.com/photo/2013/07/13/10/44/man-157699_1280.png',
     length: 255,
   })
   avatar: string;
@@ -83,7 +83,7 @@ export class User extends BaseEntity implements UserBasicData {
     type: 'enum',
     enum: StudentStatus,
     nullable: true,
-    default: null,
+    default: StudentStatus.AVAILABLE,
   })
   studentStatus: StudentStatus | null;
 

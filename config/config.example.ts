@@ -62,4 +62,5 @@ export const mailConfig = {
   adminEmail: 'test@example.com',
   mailSecure: false,
   mailPreview: true,
+  mailTlsRejectUnauthorized: false,
 };

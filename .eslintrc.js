@@ -35,5 +35,6 @@ module.exports = {
     'no-param-reassign': 'off',
     'no-else-return': 'off',
     'prefer-regex-literals': 'off',
+    'prefer-destructuring': 'off',
   },
 };
