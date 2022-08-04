@@ -12,6 +12,7 @@ import {
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
+import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
 
 describe('UserController', () => {
   let controller: UserController;
@@ -83,6 +84,13 @@ describe('UserController', () => {
       isSuccess: true,
       message: 'test message',
     })),
+
+    getOneAndSendEmailWithPassRecovery: jest.fn(
+      (emailObj: ForgotPasswordDto) => ({
+        isSuccess: true,
+        message: 'test message',
+      }),
+    ),
   };
 
   const user: ManuallyCreatedUser = {
@@ -230,5 +238,21 @@ describe('UserController', () => {
 
     expect(controller.blockTargetUser('abc')).toEqual(result);
     expect(mockUserService.blockTargetUser).toHaveBeenCalledWith('abc');
+  });
+
+  it('should find students and send email', () => {
+    const dto: ForgotPasswordDto = {
+      email: 'test@example.com',
+    };
+
+    const result = {
+      isSuccess: true,
+      message: expect.any(String),
+    };
+
+    expect(controller.findOneAndSendEmail(dto)).toEqual(result);
+    expect(
+      mockUserService.getOneAndSendEmailWithPassRecovery,
+    ).toHaveBeenCalledWith(dto);
   });
 });
