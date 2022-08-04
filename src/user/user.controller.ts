@@ -17,8 +17,10 @@ import {
   DefaultResponse,
   FilteredUser,
   FilterPayload,
+  FilterPayloadForHr,
   FindUserResponse,
   FindUsersResponse,
+  HrFilters,
   ManuallyCreatedUser,
   UserFilters,
 } from 'types';
@@ -27,6 +29,7 @@ import { AdminRoleGuard } from 'src/guards/admin-role.guard';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
+import { StudentStatus } from '../../types/enums/student.status.enum';
 
 @Controller('user')
 export class UserController {
@@ -50,6 +53,16 @@ export class UserController {
   @Post('/check-register-link')
   checkRegisterLink(@Body() { id, token }: CheckRegisterDto) {
     return this.userService.checkRegisterLink(id, token);
+  }
+
+  @Post('/users-for-hr')
+  usersForHR(@Body() payload: FilterPayloadForHr<HrFilters>) {
+    return this.userService.findUsersForHR(payload);
+  }
+
+  @Post('/reserve-user/:id')
+  reserveUser(@Param('id') id: string, @Body() payload: FilteredUser) {
+    return this.userService.reserveUser(id, payload);
   }
 
   @Post('/forgot-pass')
@@ -112,6 +125,14 @@ export class UserController {
   @Patch('/close-account/:id')
   async closeStudentAccount(@Param('id') id: string): Promise<DefaultResponse> {
     return this.userService.closeStudentAccount(id);
+  }
+
+  @Patch('/change-student-status/:id')
+  async changeStudentStatus(
+    @Param('id') id: string,
+    @Body() payload: { status: StudentStatus },
+  ): Promise<DefaultResponse> {
+    return this.userService.changeStudentStatus(id, payload);
   }
 
   @UseGuards(AuthGuard('jwt'))
