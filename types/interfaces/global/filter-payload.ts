@@ -7,5 +7,6 @@ export interface FilterPayload<T> {
 }
 
 export interface FilterPayloadForHr<T> extends FilterPayload<T> {
+  id?: string;
   studentStatus: StudentStatus;
 }

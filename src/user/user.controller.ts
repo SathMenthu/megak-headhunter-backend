@@ -29,6 +29,7 @@ import { AdminRoleGuard } from 'src/guards/admin-role.guard';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
+import { StudentStatus } from '../../types/enums/student.status.enum';
 
 @Controller('user')
 export class UserController {
@@ -124,6 +125,14 @@ export class UserController {
   @Patch('/close-account/:id')
   async closeStudentAccount(@Param('id') id: string): Promise<DefaultResponse> {
     return this.userService.closeStudentAccount(id);
+  }
+
+  @Patch('/change-student-status/:id')
+  async changeStudentStatus(
+    @Param('id') id: string,
+    @Body() payload: { status: StudentStatus },
+  ): Promise<DefaultResponse> {
+    return this.userService.changeStudentStatus(id, payload);
   }
 
   @UseGuards(AuthGuard('jwt'))

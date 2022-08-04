@@ -3,6 +3,8 @@ import {
   AdminFilters,
   ConfirmRegisterUserDto,
   DefaultResponse,
+  ExpectedContractTypeEnum,
+  ExpectedTypeWorkEnum,
   FilteredUser,
   FilterPayload,
   FilterPayloadForHr,
@@ -22,7 +24,14 @@ import {
   createForgotPasswordEmailHTML,
   createInvitationEmailHTML,
 } from 'src/templates/email/email';
-import { Like, Not } from 'typeorm';
+import {
+  ArrayContains,
+  Between,
+  In,
+  Like,
+  MoreThanOrEqual,
+  Not,
+} from 'typeorm';
 import {
   CityValidator,
   ExpectedContractTypeValidator,
@@ -627,12 +636,141 @@ export class UserService {
     }
   }
 
+  async changeStudentStatus(id: string, { status }: { status: StudentStatus }) {
+    try {
+      const foundStudent = await User.findOneBy({ id });
+      if (foundStudent) {
+        foundStudent.studentStatus = status;
+        foundStudent.reservationEndDate = null;
+        foundStudent.assignedHR = null;
+        if (status === StudentStatus.HIRED) {
+          foundStudent.accountBlocked = true;
+        }
+
+        await foundStudent.save();
+
+        return {
+          isSuccess: true,
+          message: 'User account has been successfully closed.',
+        };
+      } else {
+        throw new Error('No User Found');
+      }
+    } catch (error) {
+      return {
+        isSuccess: true,
+        message: error.message,
+      };
+    }
+  }
+
   async findUsersForHR({
+    id,
     filters,
     limit,
     page,
     studentStatus,
   }: FilterPayloadForHr<HrFilters>) {
+    try {
+      const salaryRange = [
+        filters.minSalary ? filters.minSalary : 0,
+        filters.maxSalary ? filters.maxSalary : 9999999,
+      ];
+
+      const [results, total] = await User.findAndCount({
+        where: [
+          {
+            assignedHR: id ? { id } : null,
+            firstName: Like(`%${filters.search}%`) || Not('0xError404'),
+            courseCompletion: filters.courseCompletion.length
+              ? In(filters.courseCompletion)
+              : null,
+            courseEngagement: filters.courseEngagement.length
+              ? In(filters.courseEngagement)
+              : null,
+            projectDegree: filters.projectDegree.length
+              ? In(filters.projectDegree)
+              : null,
+            teamProjectDegree: filters.teamProjectDegree.length
+              ? In(filters.teamProjectDegree)
+              : null,
+            expectedTypeWork: filters.expectedTypeWork.length
+              ? In([
+                  ExpectedTypeWorkEnum.IRRELEVANT,
+                  ...filters.expectedTypeWork,
+                ])
+              : null,
+            expectedContractType: filters.expectedContractType.length
+              ? In([
+                  ExpectedContractTypeEnum['NO PREFERENCES'],
+                  ...filters.expectedContractType,
+                ])
+              : null,
+            expectedSalary: Between(salaryRange[0], salaryRange[1]),
+            studentStatus: studentStatus,
+            canTakeApprenticeship: filters.canTakeApprenticeship,
+            monthsOfCommercialExp: filters.monthsOfCommercialExp
+              ? MoreThanOrEqual(filters.monthsOfCommercialExp)
+              : MoreThanOrEqual(0),
+            permission: RoleEnum.STUDENT,
+          },
+          {
+            lastName: Like(`%${filters.search}%`) || Not('0xError404'),
+            courseCompletion: filters.courseCompletion.length
+              ? In(filters.courseCompletion)
+              : null,
+            courseEngagement: filters.courseEngagement.length
+              ? In(filters.courseEngagement)
+              : null,
+            projectDegree: filters.projectDegree.length
+              ? In(filters.projectDegree)
+              : null,
+            teamProjectDegree: filters.teamProjectDegree.length
+              ? In(filters.teamProjectDegree)
+              : null,
+            expectedTypeWork: filters.expectedTypeWork.length
+              ? In([
+                  ExpectedTypeWorkEnum.IRRELEVANT,
+                  ...filters.expectedTypeWork,
+                ])
+              : null,
+            expectedContractType: filters.expectedContractType.length
+              ? In([
+                  ExpectedContractTypeEnum['NO PREFERENCES'],
+                  ...filters.expectedContractType,
+                ])
+              : null,
+            expectedSalary: Between(salaryRange[0], salaryRange[1]),
+            canTakeApprenticeship: filters.canTakeApprenticeship,
+            monthsOfCommercialExp: filters.monthsOfCommercialExp
+              ? MoreThanOrEqual(filters.monthsOfCommercialExp)
+              : MoreThanOrEqual(0),
+            permission: RoleEnum.STUDENT,
+            studentStatus: studentStatus,
+          },
+        ],
+        take: limit,
+        skip: (page - 1) * limit,
+      });
+      results.map(user => this.baseUserFilter(user));
+      return {
+        users: results,
+        total,
+        message: 'The user list has been successfully downloaded',
+        isSuccess: true,
+      };
+    } catch (error) {
+      return {
+        message: 'An error occurred while downloading the user list',
+        isSuccess: false,
+      };
+    }
+  }
+
+  async findUsersForTargetHR(
+    id: string,
+    { filters, limit, page, studentStatus }: FilterPayloadForHr<HrFilters>,
+  ) {
     try {
       const [results, total] = await User.findAndCount({
         where: [
@@ -640,23 +778,29 @@ export class UserService {
             email: Like(`%${filters.search}%`) || Not('0xError404'),
             studentStatus: studentStatus,
             permission: RoleEnum.STUDENT,
+            assignedHR: {
+              id,
+            },
           },
           {
             firstName: Like(`%${filters.search}%`) || Not('0xError404'),
             studentStatus: studentStatus,
             permission: RoleEnum.STUDENT,
+            assignedHR: {
+              id,
+            },
           },
           {
             lastName: Like(`%${filters.search}%`) || Not('0xError404'),
             studentStatus: studentStatus,
             permission: RoleEnum.STUDENT,
+            assignedHR: {
+              id,
+            },
           },
         ],
         take: limit,
         skip: (page - 1) * limit,
-        order: {
-          [filters.sortTarget]: filters.sortDirection ? 'DESC' : 'ASC',
-        },
       });
       results.map(user => this.baseUserFilter(user));
       return {
@@ -679,6 +823,11 @@ export class UserService {
       const foundHr = await User.findOneByOrFail({ id: payload.id });
       foundedStudent.studentStatus = StudentStatus.BUSY;
       foundedStudent.assignedHR = foundHr;
+      //set 10 days cooldown, cron will check if experience student status will be changed to avaiable
+      foundedStudent.reservationEndDate = new Date(
+        new Date().setDate(new Date().getDate() + 10),
+      );
+
       await foundedStudent.save();
 
       return {

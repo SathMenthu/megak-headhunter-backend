@@ -90,7 +90,7 @@ export class User extends BaseEntity implements UserBasicData {
   assignedHR: User;
 
   @Column({ type: 'datetime', nullable: true, default: null })
-  reservationEndDate: string | null;
+  reservationEndDate: Date | null;
 
   @Column({
     type: 'enum',
@@ -157,14 +157,15 @@ export class User extends BaseEntity implements UserBasicData {
     precision: 7,
     scale: 2,
     nullable: true,
+    default: 0,
   })
   expectedSalary: number | null;
 
   @Column({
     type: 'boolean',
-    nullable: true,
+    default: false,
   })
-  canTakeApprenticeship: boolean | null;
+  canTakeApprenticeship: boolean;
 
   @Column({
     nullable: true,
