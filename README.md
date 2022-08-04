@@ -1,7 +1,7 @@
-#Description
+# Description
 This app is server side of application created by group 8 of first edition of MegaK Javascript Bootcamp. It is created to show our skills not only by code but also by creating a system to show MegaK participants to HR agents and representatives looking for "ready to hire" developers.
 
-##TechStack
+## TechStack
 Our serverside app is made among other things by following technologies:
 - Nestjs
 - Typescript
@@ -66,10 +66,10 @@ We assume, that you found out, that config.example.ts file is an example file to
 
 You should also set up following variables in config.ts file.
 - secretConfig object - You need to assign two of its elements (**HASH_SECRET_KEY** and **TOKEN_SECRET**) with a string, the longer and more complicated the better.
-- mainConfigInfo object - You need to assign a string to element **yourDomainName**. For localhost with a port 3000 it's "http://localhost:3000"
-- papaParseConfig object - You can assign number of lines of CSV file parsed by server from the file sent by admin to insert new Students to system. Default is set to 175 due to various spam restrictions that may occur (still it can be to many, so be careful). If you are not afraid or your email account and/or domain are disposable, feel free to change it. Sky is the limit (as it was for ikarus).  
+- mainConfigInfo object - You need to assign a string to element **yourDomainName**, this is your frontend app location. For localhost with a port 3000 it's "http://localhost:3000" 
+- papaParseConfig object - You can assign number of lines of CSV file parsed by server from the file sent by admin to insert new Students to system. Default is set to 175 due to various spam restrictions that may occur (still it can be to many, so be careful). If you are not afraid or your email account and/or domain are disposable, feel free to change it. Sky is the limit (as it was for Icarus).  
 
-### email config
+### Email config
 After setting up the app you need to set up the email sending middleware. You can also do it in config.ts file.
 config.example.ts is set up to work with localhost with working  mailslurper a local SMTP mail server. You don't have to do nothing but one thing to make it work. Only setting you can be willing to change is **mailPreview** option in mailConfig object. It sets app to open email content on new tab on your browser. So if you want to add 100 students get ready to open 100 tabs... or set this option to false. 
 If You don't have mailslurper it's easy to start. Just click download button on this site https://www.mailslurper.com/ and after extracting the files run mailslurper.exe file on you machine. Your dummy email server frontend should be found on http://localhost:8080 
