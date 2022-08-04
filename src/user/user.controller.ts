@@ -20,13 +20,15 @@ import {
   FindUserResponse,
   FindUsersResponse,
   ManuallyCreatedUser,
+  RoleEnum,
   UserFilters,
 } from 'types';
 import { AuthGuard } from '@nestjs/passport';
-import { AdminRoleGuard } from 'src/guards/admin-role.guard';
+import { Roles } from 'src/decorators/roles.decorator';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
+import { RolesGuard } from '../guards/roles.guard';
 
 @Controller('user')
 export class UserController {
@@ -38,7 +40,8 @@ export class UserController {
     return this.userService.findOne(id);
   }
 
-  @UseGuards(AuthGuard('jwt'), AdminRoleGuard)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(RoleEnum.ADMIN)
   @Post('/add-many-students')
   @UseInterceptors(FileInterceptor('file'))
   addManyStudents(
