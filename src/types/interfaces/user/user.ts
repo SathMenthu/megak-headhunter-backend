@@ -4,7 +4,7 @@ import {
   RoleEnum,
 } from '../../enums';
 import { BaseOfSort, DefaultResponse } from '../global';
-import { StudentStatus } from '../../enums/student.status.enum';
+import { StudentStatus } from '../../enums';
 
 export interface UserBasicData {
   id: string;
