@@ -3,10 +3,24 @@ import { v4 as uuid } from 'uuid';
 import { UserService } from './user.service';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { User } from './entities/user.entity';
-import { ManuallyCreatedUser, RoleEnum, UserBasicData } from '../../types';
+import {
+  FilterPayload,
+  ManuallyCreatedUser,
+  RoleEnum,
+  UserBasicData,
+  UserFilters,
+} from '../../types';
+import { MailService } from '../mail/mail.service';
 
 describe('UserService', () => {
   let service: UserService;
+
+  const mockMailService = {};
+
+  const mailServiceProvider = {
+    provide: MailService,
+    useValue: mockMailService,
+  };
 
   const testUserObj: UserBasicData = {
     id: 'abc',
@@ -26,7 +40,7 @@ describe('UserService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [UserService, UtilitiesService],
+      providers: [UserService, UtilitiesService, mailServiceProvider],
     }).compile();
 
     service = module.get<UserService>(UserService);
@@ -36,23 +50,42 @@ describe('UserService', () => {
     expect(service).toBeDefined();
   });
 
-  // describe('findAll', () => {
-  //   it('should handle error', async () => {
-  //     expect(await service.findAll()).toEqual(errorResponse);
-  //   });
-  //
-  //   it('should return users list', async () => {
-  //     jest.spyOn(User, 'find').mockResolvedValue([]);
-  //
-  //     const result = {
-  //       isSuccess: true,
-  //       message: expect.any(String),
-  //       users: expect.any(Array),
-  //     };
-  //
-  //     expect(await service.findAll()).toEqual(result);
-  //   });
-  // });
+  describe('findAll', () => {
+    const payload: FilterPayload<UserFilters> = {
+      page: 1,
+      limit: 2,
+      filters: {
+        search: null,
+        email: null,
+        firstName: null,
+        lastName: null,
+        permission: {
+          text: '',
+          value: null,
+        },
+        accountBlocked: null,
+        sortDirection: true,
+        sortTarget: '',
+      },
+    };
+
+    it('should handle error', async () => {
+      expect(await service.findAll(payload)).toEqual(errorResponse);
+    });
+
+    it('should return users list', async () => {
+      jest.spyOn(User, 'findAndCount').mockResolvedValue([[], 0]);
+
+      const result = {
+        isSuccess: true,
+        total: 0,
+        message: expect.any(String),
+        users: expect.any(Array),
+      };
+
+      expect(await service.findAll(payload)).toEqual(result);
+    });
+  });
 
   describe('findOne', () => {
     it('should handle error', async () => {
@@ -98,7 +131,9 @@ describe('UserService', () => {
           email: expect.any(String),
           firstName: expect.any(String),
           lastName: expect.any(String),
-          permissions: RoleEnum.STUDENT,
+          accountBlocked: expect.any(Boolean),
+          avatar: expect.any(String),
+          permission: RoleEnum.STUDENT,
         },
       };
 
