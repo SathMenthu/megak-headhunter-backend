@@ -17,7 +17,7 @@ import {
   RoleEnum,
   UrlAndEmailToSend,
   UserFilters,
-} from 'types';
+} from '../types';
 import * as Papa from 'papaparse';
 import { v4 as uuid } from 'uuid';
 import {
@@ -42,13 +42,12 @@ import {
   StudentStatusValidator,
 } from './helpers/user.validators';
 import { MailService } from '../mail/mail.service';
-import { mainConfigInfo, papaParseConfig } from '../../config/config';
+import { mainConfigInfo, papaParseConfig } from '../config/config';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { User } from './entities/user.entity';
 import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
 import { compareArrays } from './helpers/compare.arrays';
-import { StudentStatus } from '../../types/enums/student.status.enum';
-
+import { StudentStatus } from '../types/enums/student.status.enum';
 
 @Injectable()
 export class UserService {

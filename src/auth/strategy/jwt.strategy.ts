@@ -4,7 +4,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtPayload } from 'jsonwebtoken';
 import { Request } from 'express';
 import { User } from '../../user/entities/user.entity';
-import { secretConfig } from '../../../config/config';
+import { secretConfig } from '../../config/config';
 
 function cookieExtractor(req: Request): null | string {
   return req && req.cookies ? req.cookies?.jwt ?? null : null;

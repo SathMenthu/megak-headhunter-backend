@@ -24,14 +24,14 @@ import {
   ManuallyCreatedUser,
   RoleEnum,
   UserFilters,
-} from 'types';
+} from '../types';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/decorators/roles.decorator';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
 import { RolesGuard } from '../guards/roles.guard';
-import { StudentStatus } from '../../types/enums/student.status.enum';
+import { StudentStatus } from '../types/enums/student.status.enum';
 
 @Controller('user')
 export class UserController {
