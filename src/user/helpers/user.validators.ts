@@ -1,6 +1,6 @@
-import { StudentStatus } from 'types/enums/student.status.enum';
+import {StudentStatus} from '../../types';
 import * as urlExists from 'url-exists';
-import { ExpectedContractTypeEnum, ExpectedTypeWorkEnum } from '../../../types';
+import {ExpectedContractTypeEnum, ExpectedTypeWorkEnum} from '../../types';
 
 export const StudentStatusValidator = (studentStatus: StudentStatus) =>
   studentStatus in StudentStatus && studentStatus;

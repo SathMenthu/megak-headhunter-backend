@@ -13,7 +13,7 @@ import {
   UrlAndEmailToSend,
   UserBasicData,
   UserFilters,
-} from 'types';
+} from '../types';
 import * as Papa from 'papaparse';
 import { v4 as uuid } from 'uuid';
 import {
@@ -31,7 +31,7 @@ import {
   NumberInRangeValidator,
   StudentStatusValidator,
 } from './helpers/user.validators';
-import { StudentBasicData } from '../../types/interfaces/user/student';
+import { StudentBasicData } from '../types';
 import { MailService } from '../mail/mail.service';
 import { mainConfigInfo, papaParseConfig } from '../../config/config';
 import { UtilitiesService } from '../utilities/utilities.service';

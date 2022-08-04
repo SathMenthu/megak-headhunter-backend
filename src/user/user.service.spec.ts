@@ -3,7 +3,7 @@ import { v4 as uuid } from 'uuid';
 import { UserService } from './user.service';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { User } from './entities/user.entity';
-import { RoleEnum } from '../../types';
+import { RoleEnum } from '../types';
 
 describe('UserService', () => {
   let service: UserService;

@@ -21,11 +21,10 @@ import {
   ManuallyCreatedUser,
   UserBasicData,
   UserFilters,
-} from 'types';
+} from '../types';
 import { AuthGuard } from '@nestjs/passport';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
-import { StudentBasicData } from '../../types/interfaces/user/student';
 import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
 
 @Controller('user')

@@ -3,9 +3,9 @@ import {
   ExpectedTypeWorkEnum,
   RoleEnum,
   UserBasicData,
-} from 'types';
+} from '../../types';
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { StudentStatus } from '../../../types/enums/student.status.enum';
+import { StudentStatus } from '../../types';
 
 @Entity()
 export class User extends BaseEntity implements UserBasicData {

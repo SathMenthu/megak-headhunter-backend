@@ -5,7 +5,7 @@ import {
   FindUsersResponse,
   RoleEnum,
   UserBasicData,
-} from 'types';
+} from '../types';
 import { Test, TestingModule } from '@nestjs/testing';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
