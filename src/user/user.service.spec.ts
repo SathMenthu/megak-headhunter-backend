@@ -197,11 +197,6 @@ describe('UserService', () => {
       const result = {
         isSuccess: true,
         message: expect.any(String),
-        user: {
-          id: expect.any(String),
-          email: expect.any(String),
-          permissions: RoleEnum.STUDENT,
-        },
       };
 
       expect(await service.create(dto)).toEqual(result);
