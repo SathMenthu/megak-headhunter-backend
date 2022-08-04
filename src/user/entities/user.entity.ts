@@ -4,7 +4,14 @@ import {
   RoleEnum,
   UserBasicData,
 } from 'types';
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { StudentStatus } from '../../../types/enums/student.status.enum';
 
 @Entity()
@@ -62,6 +69,9 @@ export class User extends BaseEntity implements UserBasicData {
 
   // ONLY HR VARIABLES
 
+  @OneToMany(() => User, user => user.assignedHR)
+  assignedStudents: User[];
+
   @Column({
     length: 100,
     nullable: true,
@@ -76,8 +86,11 @@ export class User extends BaseEntity implements UserBasicData {
 
   // ONLY USER VARIABLES
 
+  @ManyToOne(() => User, user => user.assignedStudents)
+  assignedHR: User;
+
   @Column({ type: 'datetime', nullable: true, default: null })
-  reservationEndDate: string | null;
+  reservationEndDate: Date | null;
 
   @Column({
     type: 'enum',
@@ -121,6 +134,7 @@ export class User extends BaseEntity implements UserBasicData {
     type: 'enum',
     enum: ExpectedTypeWorkEnum,
     nullable: true,
+    default: ExpectedTypeWorkEnum.IRRELEVANT,
   })
   expectedTypeWork: ExpectedTypeWorkEnum | null;
 
@@ -134,6 +148,7 @@ export class User extends BaseEntity implements UserBasicData {
     type: 'enum',
     enum: ExpectedContractTypeEnum,
     nullable: true,
+    default: ExpectedContractTypeEnum['NO PREFERENCES'],
   })
   expectedContractType: ExpectedContractTypeEnum | null;
 
@@ -142,14 +157,15 @@ export class User extends BaseEntity implements UserBasicData {
     precision: 7,
     scale: 2,
     nullable: true,
+    default: 0,
   })
   expectedSalary: number | null;
 
   @Column({
     type: 'boolean',
-    nullable: true,
+    default: false,
   })
-  canTakeApprenticeship: boolean | null;
+  canTakeApprenticeship: boolean;
 
   @Column({
     nullable: true,

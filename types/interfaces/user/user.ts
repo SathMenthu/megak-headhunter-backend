@@ -3,7 +3,7 @@ import {
   ExpectedTypeWorkEnum,
   RoleEnum,
 } from '../../enums';
-import { BaseOfSort, DefaultResponse } from '../global';
+import { BaseOfSort, ConvertedPayload, DefaultResponse } from '../global';
 import { StudentStatus } from '../../enums/student.status.enum';
 
 export interface UserBasicData {
@@ -75,7 +75,6 @@ export interface EditedUserData {
 }
 
 export interface UserFilters extends BaseOfSort {
-  search: string | null;
   email: string | null;
   firstName: string | null;
   lastName: string | null;
@@ -86,8 +85,20 @@ export interface UserFilters extends BaseOfSort {
   accountBlocked: boolean | null;
 }
 
+export interface HrFilters extends BaseOfSort {
+  courseCompletion: Array<number>;
+  courseEngagement: Array<number>;
+  projectDegree: Array<number>;
+  teamProjectDegree: Array<number>;
+  expectedTypeWork: ExpectedTypeWorkEnum[];
+  expectedContractType: ExpectedContractTypeEnum[];
+  minSalary: number | null;
+  maxSalary: number | null;
+  canTakeApprenticeship: boolean | null;
+  monthsOfCommercialExp: number | null;
+}
+
 export interface AdminFilters extends BaseOfSort {
-  search: string | null;
   permission: {
     text: string;
     value: RoleEnum | null;
@@ -107,7 +118,7 @@ export interface Hr extends UserBasicData {
 
 export interface Student extends UserBasicData {
   resetPasswordLink: string | null;
-  reservationEndDate: string | null;
+  reservationEndDate: Date | null;
   studentStatus: StudentStatus | null;
   phoneNumber: number | null;
   githubUsername: string | null;
