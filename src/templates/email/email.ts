@@ -1,4 +1,4 @@
-import { UrlAndEmailToSend } from '../../../types';
+import { UrlAndEmailToSend } from '../../types';
 
 export const createInvitationEmailHTML = (
   userData: UrlAndEmailToSend,

@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { createHmac } from 'crypto';
-import { secretConfig } from '../../config/config';
+import { secretConfig } from '../config/config';
 
 @Injectable()
 export class UtilitiesService {

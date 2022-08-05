@@ -1,10 +1,4 @@
 import {
-  ExpectedContractTypeEnum,
-  ExpectedTypeWorkEnum,
-  RoleEnum,
-  UserBasicData,
-} from 'types';
-import {
   BaseEntity,
   Column,
   Entity,
@@ -12,7 +6,13 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { StudentStatus } from '../../../types/enums/student.status.enum';
+import {
+  ExpectedContractTypeEnum,
+  ExpectedTypeWorkEnum,
+  RoleEnum,
+  UserBasicData,
+} from '../../types';
+import { StudentStatus } from '../../types/enums/student.status.enum';
 
 @Entity()
 export class User extends BaseEntity implements UserBasicData {

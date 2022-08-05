@@ -17,7 +17,7 @@ import {
   RoleEnum,
   UrlAndEmailToSend,
   UserFilters,
-} from 'types';
+} from '../types';
 import * as Papa from 'papaparse';
 import { v4 as uuid } from 'uuid';
 import {
@@ -42,13 +42,12 @@ import {
   StudentStatusValidator,
 } from './helpers/user.validators';
 import { MailService } from '../mail/mail.service';
-import { mainConfigInfo, papaParseConfig } from '../../config/config';
+import { mainConfigInfo, papaParseConfig } from '../config/config';
 import { UtilitiesService } from '../utilities/utilities.service';
 import { User } from './entities/user.entity';
 import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
 import { compareArrays } from './helpers/compare.arrays';
-import { StudentStatus } from '../../types/enums/student.status.enum';
-
+import { StudentStatus } from '../types/enums/student.status.enum';
 
 @Injectable()
 export class UserService {
@@ -317,6 +316,10 @@ export class UserService {
         permission,
         maxReservedStudents,
         company,
+        courseCompletion,
+        courseEngagement,
+        projectDegree,
+        teamProjectDegree,
       } = user;
       const foundUser = await User.findOneBy({ email });
       if (foundUser) {
@@ -336,6 +339,24 @@ export class UserService {
           newUser.company = company || '';
           newUser.maxReservedStudents =
             NumberInRangeValidator(maxReservedStudents, 1, 999) || 1;
+        }
+        if (newUser.permission === 'STUDENT') {
+          newUser.courseCompletion = NumberInRangeValidator(
+            courseCompletion,
+            1,
+            5,
+          );
+          newUser.courseEngagement = NumberInRangeValidator(
+            courseEngagement,
+            1,
+            5,
+          );
+          newUser.projectDegree = NumberInRangeValidator(projectDegree, 1, 5);
+          newUser.teamProjectDegree = NumberInRangeValidator(
+            teamProjectDegree,
+            1,
+            5,
+          );
         }
         newUser.activationLink = uuid();
         await newUser.save();
@@ -523,9 +544,9 @@ export class UserService {
       if (permission === 'STUDENT') {
         //@TODO check validation - can no works
         // Github and avatar
-        foundedUser.githubUsername =
-          LinksValidator([`https://github.com/${githubUsername}/`]).length &&
-          githubUsername;
+        foundedUser.githubUsername = githubUsername
+          ? LinksValidator([`https://github.com/${githubUsername}/`])[0]
+          : githubUsername;
 
         if (foundedUser.githubUsername) {
           foundedUser.avatar = decodeURIComponent(
