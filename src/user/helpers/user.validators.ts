@@ -13,9 +13,15 @@ export const ExpectedTypeWorkValidator = (
   expectedTypeWork: ExpectedTypeWorkEnum,
 ) => expectedTypeWork in ExpectedTypeWorkEnum && expectedTypeWork;
 
-export const LinksValidator = (arrayOfLinks: Array<string>) =>
-  arrayOfLinks &&
-  arrayOfLinks.filter(async link => urlExists(link, (err, exists) => exists));
+export const LinksValidator = (arrayOfLinks: Array<string> | string) => {
+  if (typeof arrayOfLinks === 'string') {
+    arrayOfLinks = arrayOfLinks.split(',');
+  }
+  return (
+    arrayOfLinks &&
+    arrayOfLinks.filter(async link => urlExists(link, (err, exists) => exists))
+  );
+};
 
 export const CityValidator = (city: string) =>
   RegExp(

@@ -522,9 +522,9 @@ export class UserService {
       if (permission === 'STUDENT') {
         //@TODO check validation - can no works
         // Github and avatar
-        foundedUser.githubUsername =
-          LinksValidator([`https://github.com/${githubUsername}/`]).length &&
-          githubUsername;
+        foundedUser.githubUsername = githubUsername
+          ? LinksValidator([`https://github.com/${githubUsername}/`])[0]
+          : githubUsername;
 
         if (foundedUser.githubUsername) {
           foundedUser.avatar = decodeURIComponent(
