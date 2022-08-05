@@ -316,6 +316,10 @@ export class UserService {
         permission,
         maxReservedStudents,
         company,
+        courseCompletion,
+        courseEngagement,
+        projectDegree,
+        teamProjectDegree,
       } = user;
       const foundUser = await User.findOneBy({ email });
       if (foundUser) {
@@ -335,6 +339,24 @@ export class UserService {
           newUser.company = company || '';
           newUser.maxReservedStudents =
             NumberInRangeValidator(maxReservedStudents, 1, 999) || 1;
+        }
+        if (newUser.permission === 'STUDENT') {
+          newUser.courseCompletion = NumberInRangeValidator(
+            courseCompletion,
+            1,
+            5,
+          );
+          newUser.courseEngagement = NumberInRangeValidator(
+            courseEngagement,
+            1,
+            5,
+          );
+          newUser.projectDegree = NumberInRangeValidator(projectDegree, 1, 5);
+          newUser.teamProjectDegree = NumberInRangeValidator(
+            teamProjectDegree,
+            1,
+            5,
+          );
         }
         newUser.activationLink = uuid();
         await newUser.save();

@@ -24,6 +24,10 @@ export interface ManuallyCreatedUser {
   permission: RoleEnum;
   maxReservedStudents: number | null;
   company: string | null;
+  courseCompletion: number | null;
+  courseEngagement: number | null;
+  projectDegree: number | null;
+  teamProjectDegree: number | null;
 }
 
 export type FilteredUser = Omit<Student & Hr, 'password'>;
