@@ -1,4 +1,4 @@
-import { StudentStatus } from '../../enums/student.status.enum';
+import { StudentStatus } from '../../enums';
 
 export interface FilterPayload<T> {
   page: number;
