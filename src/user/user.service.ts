@@ -576,13 +576,13 @@ export class UserService {
           StudentStatusValidator(studentStatus) || foundedUser.studentStatus;
         // Portfolio Urls
         foundedUser.portfolioUrls =
-          LinksValidator(portfolioUrls, 'Linki do portfolio', false) ||
-          foundedUser.portfolioUrls;
+          portfolioUrls[0] !== ''
+            ? await LinksValidator(portfolioUrls, 'Linki do portfolio')
+            : null;
         // Project Urls *
-        foundedUser.projectUrls = LinksValidator(
+        foundedUser.projectUrls = await LinksValidator(
           projectUrls,
           'Linki do projektów',
-          true,
         );
         // Bio
         foundedUser.bio = bio || foundedUser.bio;

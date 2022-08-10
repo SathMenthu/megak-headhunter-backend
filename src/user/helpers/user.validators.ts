@@ -1,4 +1,3 @@
-import * as urlExists from 'url-exists';
 import fetch from 'node-fetch';
 import {
   ExpectedContractTypeEnum,
@@ -34,24 +33,38 @@ export const ExpectedTypeWorkValidator = (
   return expectedTypeWork;
 };
 
-export const LinksValidator = (
+export const urlValidator = async (url: string) => {
+  const { status } = await fetch(url);
+  if (status !== 200) {
+    return null;
+  }
+  return url;
+};
+
+export const LinksValidator = async (
   arrayOfLinks: Array<string> | string,
   checkedValue: string,
-  escapeFlag: boolean,
 ) => {
   if (typeof arrayOfLinks === 'string') {
     arrayOfLinks = arrayOfLinks.split(',');
   }
-  if (
-    arrayOfLinks &&
-    arrayOfLinks.filter(async link => urlExists(link, (err, exists) => exists))
-  ) {
-    return arrayOfLinks;
+  if (arrayOfLinks) {
+    const filteredArrayOfLinks = (
+      await Promise.all(
+        arrayOfLinks.map(async link => {
+          try {
+            return await urlValidator(link);
+          } catch (e) {
+            return null;
+          }
+        }),
+      )
+    ).filter(url => url !== null);
+    if (filteredArrayOfLinks.length > 0) {
+      return filteredArrayOfLinks;
+    }
   }
-  if (escapeFlag) {
-    throw new Error(`Pole ${checkedValue} zostało źle wypełnione`);
-  }
-  return null;
+  throw new Error(`Pole ${checkedValue} zostało źle wypełnione`);
 };
 
 export const CityValidator = (city: string) =>
