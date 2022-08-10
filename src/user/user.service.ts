@@ -1,4 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
+import * as Papa from 'papaparse';
+import { v4 as uuid } from 'uuid';
+import {
+  createForgotPasswordEmailHTML,
+  createInvitationEmailHTML,
+} from 'src/templates/email/email';
+import { Between, In, Like, MoreThanOrEqual, Not } from 'typeorm';
 import {
   AdminFilters,
   ConfirmRegisterUserDto,
@@ -19,28 +26,19 @@ import {
   UserFilters,
   StudentStatus,
 } from '../types';
-import * as Papa from 'papaparse';
-import { v4 as uuid } from 'uuid';
 import {
-  createForgotPasswordEmailHTML,
-  createInvitationEmailHTML,
-} from 'src/templates/email/email';
-import {
-  ArrayContains,
-  Between,
-  In,
-  Like,
-  MoreThanOrEqual,
-  Not,
-} from 'typeorm';
-import {
+  BooleanValidator,
   CityValidator,
   ExpectedContractTypeValidator,
   ExpectedTypeWorkValidator,
+  GitHubUserNameValidator,
   LinksValidator,
   MailValidator,
   NumberInRangeValidator,
+  PhoneNumberValidator,
+  StringValidator,
   StudentStatusValidator,
+  ValidateEmail,
 } from './helpers/user.validators';
 import { MailService } from '../mail/mail.service';
 import { mainConfigInfo, papaParseConfig } from '../config/config';
@@ -126,7 +124,7 @@ export class UserService {
           await foundUser.save();
         }
 
-        /** ------------ Could change it by Conditionall operator but Kuba wanted to change only those variables, which changed comparing to User in DB. ---------------*/
+        /** ------------ Could change it by Conditional operator but Kuba wanted to change only those variables, which changed comparing to User in DB. ---------------*/
         // That doesn't make to much sense, because TypeORM sends it to DB as a whole object
         // but now i know if something changed
         // I used it as a chance and thanks to that the answer messages to tells how many object were updated
@@ -338,24 +336,37 @@ export class UserService {
         if (newUser.permission === 'HR') {
           newUser.company = company || '';
           newUser.maxReservedStudents =
-            NumberInRangeValidator(maxReservedStudents, 1, 999) || 1;
+            NumberInRangeValidator(
+              maxReservedStudents,
+              1,
+              999,
+              'Maksymalna liczba rozmów',
+            ) || 1;
         }
         if (newUser.permission === 'STUDENT') {
           newUser.courseCompletion = NumberInRangeValidator(
             courseCompletion,
             1,
             5,
+            'Ocena stopnia przejścia kursu',
           );
           newUser.courseEngagement = NumberInRangeValidator(
             courseEngagement,
             1,
             5,
+            'Aktywność w kursie',
           );
-          newUser.projectDegree = NumberInRangeValidator(projectDegree, 1, 5);
+          newUser.projectDegree = NumberInRangeValidator(
+            projectDegree,
+            1,
+            5,
+            'Ocena z projektu zaliczeniowego',
+          );
           newUser.teamProjectDegree = NumberInRangeValidator(
             teamProjectDegree,
             1,
             5,
+            'Ocena z projektu grupowego',
           );
         }
         newUser.activationLink = uuid();
@@ -507,6 +518,7 @@ export class UserService {
   async editUser(
     foundedUser: User,
     {
+      email,
       phoneNumber,
       password,
       firstName,
@@ -527,66 +539,79 @@ export class UserService {
       education,
       workExperience,
       courses,
-      courseCompletion,
-      courseEngagement,
-      projectDegree,
-      teamProjectDegree,
-      bonusProjectUrls,
       githubUsername,
     }: Partial<ConfirmRegisterUserDto>,
   ): Promise<DefaultResponse> {
     try {
-      foundedUser.firstName = firstName;
-      foundedUser.lastName = lastName;
+      foundedUser.email = await ValidateEmail(
+        email,
+        foundedUser.email,
+        foundedUser.id,
+      );
+
+      foundedUser.firstName = StringValidator(firstName, 1, 'Imię');
+      foundedUser.lastName = StringValidator(lastName, 1, 'Nazwisko');
       foundedUser.password = password
-        ? this.utilitiesService.hashPassword(password)
+        ? this.utilitiesService.hashPassword(
+            StringValidator(password, 6, 'Hasło'),
+          )
         : foundedUser.password;
-      if (permission === 'STUDENT') {
-        //@TODO check validation - can no works
-        // Github and avatar
-        foundedUser.githubUsername = githubUsername
-          ? LinksValidator([`https://github.com/${githubUsername}/`])[0]
-          : githubUsername;
+      if (permission === RoleEnum.STUDENT) {
+        // Github and avatar *
+        foundedUser.githubUsername =
+          githubUsername && (await GitHubUserNameValidator(githubUsername));
 
         if (foundedUser.githubUsername) {
           foundedUser.avatar = decodeURIComponent(
-            LinksValidator([`https://github.com/${githubUsername}.png`])[0],
+            `https://github.com/${githubUsername}.png`,
           );
         }
 
-        // Student Status
+        // Phone number
+        foundedUser.phoneNumber = phoneNumber
+          ? PhoneNumberValidator(phoneNumber, 100000000, 999999999)
+          : null;
+        // Student Status *
         foundedUser.studentStatus =
           StudentStatusValidator(studentStatus) || foundedUser.studentStatus;
         // Portfolio Urls
         foundedUser.portfolioUrls =
-          LinksValidator(portfolioUrls) || foundedUser.portfolioUrls;
-        // Project Urls
-        foundedUser.projectUrls =
-          LinksValidator(projectUrls) || foundedUser.projectUrls;
+          portfolioUrls[0] !== ''
+            ? await LinksValidator(portfolioUrls, 'Linki do portfolio')
+            : null;
+        // Project Urls *
+        foundedUser.projectUrls = await LinksValidator(
+          projectUrls,
+          'Linki do projektów',
+        );
         // Bio
         foundedUser.bio = bio || foundedUser.bio;
-        // Expected Type Work
+        // Expected Type Work *
         foundedUser.expectedTypeWork =
-          ExpectedTypeWorkValidator(expectedTypeWork) ||
-          foundedUser.expectedTypeWork;
+          ExpectedTypeWorkValidator(expectedTypeWork);
         // Target Work City
         foundedUser.targetWorkCity =
           CityValidator(targetWorkCity) || foundedUser.targetWorkCity;
-        // Expected Contract Type
+        // Expected Contract Type *
         foundedUser.expectedContractType =
           ExpectedContractTypeValidator(expectedContractType) ||
           foundedUser.expectedContractType;
         // Expected Salary
         foundedUser.expectedSalary =
-          NumberInRangeValidator(expectedSalary, 1, 9999999) ||
+          NumberInRangeValidator(expectedSalary, 0, 9999999, 'Wynagrodzenie') ||
           foundedUser.expectedSalary;
-        // Can Take Apprenticeship
-        //@TODO add validation
-        foundedUser.canTakeApprenticeship = canTakeApprenticeship;
-        // Month of Commercial Experience
-        foundedUser.monthsOfCommercialExp =
-          NumberInRangeValidator(monthsOfCommercialExp, 1, 999) ||
-          foundedUser.monthsOfCommercialExp;
+        // Can Take Apprenticeship *
+        foundedUser.canTakeApprenticeship = BooleanValidator(
+          canTakeApprenticeship,
+          'Zgoda na bezpłatny staż',
+        );
+        // Month of Commercial Experience *
+        foundedUser.monthsOfCommercialExp = NumberInRangeValidator(
+          monthsOfCommercialExp,
+          0,
+          999,
+          'Miesiące doświadczenia komercyjnego',
+        );
         // Education
         foundedUser.education = education || foundedUser.education;
         // Work Experience
@@ -594,33 +619,17 @@ export class UserService {
           workExperience || foundedUser.workExperience;
         // Courses
         foundedUser.courses = courses || foundedUser.courses;
-        // Course Completion
-        foundedUser.courseCompletion =
-          NumberInRangeValidator(courseCompletion, 1, 5) ||
-          foundedUser.courseCompletion;
-        // Course Engagement
-        foundedUser.courseEngagement =
-          NumberInRangeValidator(courseEngagement, 1, 5) ||
-          foundedUser.courseEngagement;
-        // Project Degree
-        foundedUser.projectDegree =
-          NumberInRangeValidator(projectDegree, 1, 5) ||
-          foundedUser.projectDegree;
-        // Team Project Degree
-        foundedUser.teamProjectDegree =
-          NumberInRangeValidator(teamProjectDegree, 1, 5) ||
-          foundedUser.teamProjectDegree;
-        // Bonus Project Urls
-        foundedUser.bonusProjectUrls =
-          LinksValidator(bonusProjectUrls) || foundedUser.bonusProjectUrls;
-
-        //@TODO add phone validation
-        foundedUser.phoneNumber = phoneNumber || foundedUser.phoneNumber;
-      } else if (permission === 'HR') {
-        foundedUser.company = company || '';
+      } else if (permission === RoleEnum.HR) {
+        foundedUser.company = StringValidator(company, 1, 'Nazwa firmy');
         foundedUser.maxReservedStudents =
-          NumberInRangeValidator(maxReservedStudents, 1, 999) || 1;
+          NumberInRangeValidator(
+            maxReservedStudents,
+            1,
+            999,
+            'Maksymalna liczba rozmów',
+          ) || 1;
       }
+
       // Clear Token
       foundedUser.activationLink = null;
       foundedUser.accountBlocked = false;
@@ -628,13 +637,13 @@ export class UserService {
       await foundedUser.save();
       return {
         isSuccess: true,
-        message: 'User has been successfully updated.',
+        message: 'Dane użytkownika zostały pomyślnie zaktualizowane.',
       };
     } catch (error) {
       console.log(error);
       return {
         isSuccess: false,
-        message: 'An error occurred while updated the user.',
+        message: error.message,
       };
     }
   }
@@ -902,7 +911,7 @@ export class UserService {
       const foundHr = await User.findOneByOrFail({ id: payload.id });
       foundedStudent.studentStatus = StudentStatus.BUSY;
       foundedStudent.assignedHR = foundHr;
-      //set 10 days cooldown, cron will check if experience student status will be changed to avaiable
+      // set 10 days cooldown, cron will check if experience student status will be changed to avaiable
       foundedStudent.reservationEndDate = new Date(
         new Date().setDate(new Date().getDate() + 10),
       );

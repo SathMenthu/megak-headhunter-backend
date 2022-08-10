@@ -11,6 +11,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { AuthGuard } from '@nestjs/passport';
+import { Roles } from 'src/decorators/roles.decorator';
 import {
   CheckRegisterDto,
   ConfirmRegisterUserDto,
@@ -26,8 +28,6 @@ import {
   UserFilters,
   StudentStatus
 } from '../types';
-import { AuthGuard } from '@nestjs/passport';
-import { Roles } from 'src/decorators/roles.decorator';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
