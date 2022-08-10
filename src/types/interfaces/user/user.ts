@@ -2,9 +2,9 @@ import {
   ExpectedContractTypeEnum,
   ExpectedTypeWorkEnum,
   RoleEnum,
+  StudentStatus,
 } from '../../enums';
 import { BaseOfSort, ConvertedPayload, DefaultResponse } from '../global';
-import { StudentStatus } from '../../enums/student.status.enum';
 
 export interface UserBasicData {
   id: string;

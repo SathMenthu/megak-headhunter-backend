@@ -11,8 +11,8 @@ import {
   ExpectedTypeWorkEnum,
   RoleEnum,
   UserBasicData,
+  StudentStatus,
 } from '../../types';
-import { StudentStatus } from '../../types/enums/student.status.enum';
 
 @Entity()
 export class User extends BaseEntity implements UserBasicData {

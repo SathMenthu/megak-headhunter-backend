@@ -1,3 +1,4 @@
+
 import fetch from 'node-fetch';
 import {
   ExpectedContractTypeEnum,
@@ -5,6 +6,9 @@ import {
   StudentStatus,
 } from '../../types';
 import { User } from '../entities/user.entity';
+import * as urlExists from 'url-exists';
+import { ExpectedContractTypeEnum, ExpectedTypeWorkEnum, StudentStatus } from '../../types';
+
 
 export const StudentStatusValidator = (studentStatus: StudentStatus) =>
   studentStatus in StudentStatus && studentStatus;

@@ -1,5 +1,4 @@
-import { StudentStatus } from '../../enums/student.status.enum';
-import { ExpectedContractTypeEnum, ExpectedTypeWorkEnum } from '../../enums';
+import { ExpectedContractTypeEnum, ExpectedTypeWorkEnum, StudentStatus} from '../../enums';
 
 export interface StudentBasicData {
   reservationEndDate: string | null;
