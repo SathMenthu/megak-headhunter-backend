@@ -576,7 +576,7 @@ export class UserService {
           StudentStatusValidator(studentStatus) || foundedUser.studentStatus;
         // Portfolio Urls
         foundedUser.portfolioUrls =
-          portfolioUrls[0] !== ''
+          portfolioUrls && portfolioUrls[0] !== ''
             ? await LinksValidator(portfolioUrls, 'Linki do portfolio')
             : null;
         // Project Urls *
