@@ -24,6 +24,7 @@ import {
   RoleEnum,
   UrlAndEmailToSend,
   UserFilters,
+  StudentStatus,
 } from '../types';
 import {
   BooleanValidator,
@@ -45,7 +46,6 @@ import { UtilitiesService } from '../utilities/utilities.service';
 import { User } from './entities/user.entity';
 import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
 import { compareArrays } from './helpers/compare.arrays';
-import { StudentStatus } from '../types/enums/student.status.enum';
 
 @Injectable()
 export class UserService {
@@ -576,12 +576,13 @@ export class UserService {
           StudentStatusValidator(studentStatus) || foundedUser.studentStatus;
         // Portfolio Urls
         foundedUser.portfolioUrls =
-          LinksValidator(portfolioUrls, 'Linki do portfolio') ||
+          LinksValidator(portfolioUrls, 'Linki do portfolio', false) ||
           foundedUser.portfolioUrls;
         // Project Urls *
         foundedUser.projectUrls = LinksValidator(
           projectUrls,
           'Linki do projektów',
+          true,
         );
         // Bio
         foundedUser.bio = bio || foundedUser.bio;
@@ -597,7 +598,7 @@ export class UserService {
           foundedUser.expectedContractType;
         // Expected Salary
         foundedUser.expectedSalary =
-          NumberInRangeValidator(expectedSalary, 1, 9999999, 'Wynagrodzenie') ||
+          NumberInRangeValidator(expectedSalary, 0, 9999999, 'Wynagrodzenie') ||
           foundedUser.expectedSalary;
         // Can Take Apprenticeship *
         foundedUser.canTakeApprenticeship = BooleanValidator(
@@ -607,7 +608,7 @@ export class UserService {
         // Month of Commercial Experience *
         foundedUser.monthsOfCommercialExp = NumberInRangeValidator(
           monthsOfCommercialExp,
-          1,
+          0,
           999,
           'Miesiące doświadczenia komercyjnego',
         );

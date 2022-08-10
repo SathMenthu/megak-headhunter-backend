@@ -1,7 +1,10 @@
 import * as urlExists from 'url-exists';
 import fetch from 'node-fetch';
-import { StudentStatus } from '../../types/enums/student.status.enum';
-import { ExpectedContractTypeEnum, ExpectedTypeWorkEnum } from '../../types';
+import {
+  ExpectedContractTypeEnum,
+  ExpectedTypeWorkEnum,
+  StudentStatus,
+} from '../../types';
 import { User } from '../entities/user.entity';
 
 export const StudentStatusValidator = (studentStatus: StudentStatus) =>
@@ -34,6 +37,7 @@ export const ExpectedTypeWorkValidator = (
 export const LinksValidator = (
   arrayOfLinks: Array<string> | string,
   checkedValue: string,
+  escapeFlag: boolean,
 ) => {
   if (typeof arrayOfLinks === 'string') {
     arrayOfLinks = arrayOfLinks.split(',');
@@ -44,7 +48,10 @@ export const LinksValidator = (
   ) {
     return arrayOfLinks;
   }
-  throw new Error(`Pole ${checkedValue} zostało źle wypełnione`);
+  if (escapeFlag) {
+    throw new Error(`Pole ${checkedValue} zostało źle wypełnione`);
+  }
+  return null;
 };
 
 export const CityValidator = (city: string) =>
@@ -63,15 +70,14 @@ export const NumberInRangeValidator = (
   checkedValue: string,
 ) => {
   if (
-    Number.isInteger(Number(value)) &&
+    (Number.isInteger(Number(value)) || Number(value) === 0) &&
     Number(value) >= starts &&
-    Number(value) <= ends &&
-    value
+    Number(value) <= ends
   ) {
     return value;
   }
   throw new Error(
-    `Liczba w polu ${checkedValue} powinna zmieścić się w przedziale ${starts} do ${ends}.`,
+    `Liczba w polu ${checkedValue} powinna zmieścić się w przedziale ${starts} do ${ends} i być liczbą całkowitą.`,
   );
 };
 
@@ -79,7 +85,7 @@ export const BooleanValidator = (
   value: boolean | null | string,
   checkedValue: string,
 ) => {
-  if (typeof value === 'boolean' && value) {
+  if (typeof value === 'boolean' && (value === true || value === false)) {
     return value;
   }
   throw new Error(
