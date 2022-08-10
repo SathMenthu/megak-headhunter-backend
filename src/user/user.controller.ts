@@ -97,6 +97,7 @@ export class UserController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(RoleEnum.STUDENT, RoleEnum.HR)
   @Patch('/:id')
   async update(
     @Param('id') id: string,
