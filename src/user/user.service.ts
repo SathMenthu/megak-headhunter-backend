@@ -17,6 +17,7 @@ import {
   RoleEnum,
   UrlAndEmailToSend,
   UserFilters,
+  StudentStatus,
 } from '../types';
 import * as Papa from 'papaparse';
 import { v4 as uuid } from 'uuid';
@@ -47,7 +48,6 @@ import { UtilitiesService } from '../utilities/utilities.service';
 import { User } from './entities/user.entity';
 import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
 import { compareArrays } from './helpers/compare.arrays';
-import { StudentStatus } from '../types/enums/student.status.enum';
 
 @Injectable()
 export class UserService {
