@@ -623,13 +623,14 @@ export class UserService {
         foundedUser.courses = courses || foundedUser.courses;
       } else if (permission === RoleEnum.HR) {
         foundedUser.company = StringValidator(company, 1, 'Nazwa firmy');
-        foundedUser.maxReservedStudents =
-          NumberInRangeValidator(
-            maxReservedStudents,
-            1,
-            999,
-            'Maksymalna liczba rozmów',
-          ) || 1;
+        foundedUser.maxReservedStudents = maxReservedStudents
+          ? NumberInRangeValidator(
+              maxReservedStudents,
+              1,
+              999,
+              'Maksymalna liczba rozmów',
+            )
+          : 1;
       }
 
       // Clear Token
@@ -726,13 +727,20 @@ export class UserService {
     }
   }
 
-  async changeStudentStatus(id: string, { status }: { status: StudentStatus }) {
+  async changeStudentStatus(
+    id: string,
+    { status }: { status: StudentStatus },
+    hrId: string,
+  ) {
     try {
       const foundStudent = await User.findOneBy({ id });
+      const foundUserToUser = await UserToUser.findOneByOrFail({
+        hrId,
+        studentId: id,
+      });
+
       if (foundStudent) {
-        foundStudent.studentStatus = status;
-        foundStudent.reservationEndDate = null;
-        foundStudent.assignedHR = null;
+        await UserToUser.remove(foundUserToUser);
         if (status === StudentStatus.HIRED) {
           foundStudent.accountBlocked = true;
         }
@@ -763,11 +771,13 @@ export class UserService {
         filters.minSalary ? filters.minSalary : 0,
         filters.maxSalary ? filters.maxSalary : 9999999,
       ];
+      const arrayOfStudentsTalkingToHr = await UserToUser.findBy({
+        hrId: userFromRequest,
+      });
 
-      const [results, total] = await User.findAndCount({
+      const results = await User.find({
         where: [
           {
-            assignedHR: id ? { id } : null,
             firstName: Like(`%${filters.search}%`) || Not('0xError404'),
             courseCompletion: filters.courseCompletion.length
               ? In(filters.courseCompletion)
@@ -794,7 +804,6 @@ export class UserService {
                 ])
               : null,
             expectedSalary: Between(salaryRange[0], salaryRange[1]),
-            studentStatus: studentStatus,
             canTakeApprenticeship: filters.canTakeApprenticeship,
             monthsOfCommercialExp: filters.monthsOfCommercialExp
               ? MoreThanOrEqual(filters.monthsOfCommercialExp)
@@ -839,10 +848,25 @@ export class UserService {
         take: limit,
         skip: (page - 1) * limit,
       });
-      results.map(user => this.baseUserFilter(user));
+
+      const filteredStudentIdsForHr = arrayOfStudentsTalkingToHr.map(
+        user => user.studentId,
+      );
+
+      const finalResults = results
+        .filter(user => {
+          if (studentStatus === 'BUSY') {
+            return filteredStudentIdsForHr.includes(user.id);
+          } else if (studentStatus === 'AVAILABLE') {
+            return !filteredStudentIdsForHr.includes(user.id);
+          }
+          return false;
+        })
+        .map(user => this.baseUserFilter(user));
+
       return {
-        users: results,
-        total,
+        users: finalResults,
+        total: finalResults && finalResults.length,
         message: 'The user list has been successfully downloaded',
         isSuccess: true,
       };
@@ -918,12 +942,12 @@ export class UserService {
 
       const newUserToUser =
         (await UserToUser.findOneBy({
-          hrId: id,
-          studentId: payload.id,
+          hrId: payload.id,
+          studentId: id,
         })) || new UserToUser();
       newUserToUser.id = newUserToUser.id || uuid();
-      newUserToUser.hrId = id;
-      newUserToUser.studentId = payload.id;
+      newUserToUser.hrId = payload.id;
+      newUserToUser.studentId = id;
       newUserToUser.reservationEndDate = new Date(
         new Date().setDate(new Date().getDate() + 10),
       );

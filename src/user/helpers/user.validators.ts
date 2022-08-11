@@ -87,7 +87,7 @@ export const NumberInRangeValidator = (
     Number(value) >= starts &&
     Number(value) <= ends
   ) {
-    return Number(value);
+    return Number(value) || 1;
   }
   throw new Error(
     `Liczba w polu ${checkedValue} powinna zmieścić się w przedziale ${starts} do ${ends} i być liczbą całkowitą.`,

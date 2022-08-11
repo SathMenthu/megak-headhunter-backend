@@ -157,8 +157,9 @@ export class UserController {
   async changeStudentStatus(
     @Param('id') id: string,
     @Body() payload: { status: StudentStatus },
+    @Req() request: Request & { user: User },
   ): Promise<DefaultResponse> {
-    return this.userService.changeStudentStatus(id, payload);
+    return this.userService.changeStudentStatus(id, payload, request.user.id);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
