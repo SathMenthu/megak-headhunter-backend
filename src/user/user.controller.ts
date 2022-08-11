@@ -26,12 +26,13 @@ import {
   ManuallyCreatedUser,
   RoleEnum,
   UserFilters,
-  StudentStatus
+  StudentStatus,
 } from '../types';
 import { UserService } from './user.service';
 import { User } from './entities/user.entity';
 import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
 import { RolesGuard } from '../guards/roles.guard';
+import { IdsGuard } from '../guards/ids.guard';
 
 @Controller('user')
 export class UserController {
@@ -66,7 +67,7 @@ export class UserController {
     return this.userService.findUsersForHR(payload);
   }
 
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @UseGuards(AuthGuard('jwt'), RolesGuard, IdsGuard)
   @Roles(RoleEnum.HR)
   @Post('/reserve-user/:id')
   reserveUser(@Param('id') id: string, @Body() payload: FilteredUser) {
@@ -96,7 +97,7 @@ export class UserController {
     return this.userService.findAll(payload);
   }
 
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @UseGuards(AuthGuard('jwt'), RolesGuard, IdsGuard)
   @Roles(RoleEnum.STUDENT, RoleEnum.HR)
   @Patch('/:id')
   async update(
@@ -107,6 +108,8 @@ export class UserController {
     return this.userService.editUser(foundedUser, userData);
   }
 
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(RoleEnum.ADMIN)
   @Patch('/password/:id')
   restartPassword(
     @Param('id') id: string,
@@ -127,19 +130,24 @@ export class UserController {
     @Param('id') activationLink: string,
     @Body() userData: FilteredUser,
   ): Promise<DefaultResponse> {
+    if (activationLink !== userData.activationLink) {
+      return { isSuccess: false, message: 'You can change only Your data' };
+    }
     const foundedUser = await User.findOneBy({ activationLink });
     return foundedUser
       ? this.userService.editUser(foundedUser, userData)
       : { isSuccess: false, message: 'Link is no longer active' };
   }
 
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @UseGuards(AuthGuard('jwt'), RolesGuard, IdsGuard)
   @Roles(RoleEnum.STUDENT)
   @Patch('/close-account/:id')
   async closeStudentAccount(@Param('id') id: string): Promise<DefaultResponse> {
     return this.userService.closeStudentAccount(id);
   }
 
+  @UseGuards(AuthGuard('jwt'), RolesGuard, IdsGuard)
+  @Roles(RoleEnum.STUDENT, RoleEnum.HR)
   @Patch('/change-student-status/:id')
   async changeStudentStatus(
     @Param('id') id: string,
