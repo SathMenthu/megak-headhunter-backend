@@ -28,6 +28,7 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/passport": "^9.0.0",
     "@nestjs/platform-express": "^8.0.0",
+    "@nestjs/schedule": "^2.1.0",
     "@nestjs/typeorm": "^9.0.0",
     "cookie-parser": "^1.4.6",
     "eslint-config-airbnb-typescript": "^17.0.0",
