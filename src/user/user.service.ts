@@ -46,6 +46,7 @@ import { UtilitiesService } from '../utilities/utilities.service';
 import { User } from './entities/user.entity';
 import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
 import { compareArrays } from './helpers/compare.arrays';
+import { UserToUser } from './entities/user-to-user.entity';
 
 @Injectable()
 export class UserService {
@@ -753,13 +754,10 @@ export class UserService {
     }
   }
 
-  async findUsersForHR({
-    id,
-    filters,
-    limit,
-    page,
-    studentStatus,
-  }: FilterPayloadForHr<HrFilters>) {
+  async findUsersForHR(
+    { id, filters, limit, page, studentStatus }: FilterPayloadForHr<HrFilters>,
+    userFromRequest: string,
+  ) {
     try {
       const salaryRange = [
         filters.minSalary ? filters.minSalary : 0,
@@ -908,16 +906,29 @@ export class UserService {
 
   async reserveUser(id: string, payload: FilteredUser) {
     try {
-      const foundedStudent = await User.findOneByOrFail({ id });
-      const foundHr = await User.findOneByOrFail({ id: payload.id });
-      foundedStudent.studentStatus = StudentStatus.BUSY;
-      foundedStudent.assignedHR = foundHr;
-      // set 10 days cooldown, cron will check if experience student status will be changed to avaiable
-      foundedStudent.reservationEndDate = new Date(
+      await User.findOneByOrFail({ id });
+      await User.findOneByOrFail({ id: payload.id });
+      // foundedStudent.studentStatus = StudentStatus.BUSY;
+      // foundedStudent.assignedHR = foundHr;
+      // // set 10 days cooldown, cron will check if experience student status will be changed to avaiable
+      // foundedStudent.reservationEndDate = new Date(
+      //   new Date().setDate(new Date().getDate() + 10),
+      // );
+      // await foundedStudent.save();
+
+      const newUserToUser =
+        (await UserToUser.findOneBy({
+          hrId: id,
+          studentId: payload.id,
+        })) || new UserToUser();
+      newUserToUser.id = newUserToUser.id || uuid();
+      newUserToUser.hrId = id;
+      newUserToUser.studentId = payload.id;
+      newUserToUser.reservationEndDate = new Date(
         new Date().setDate(new Date().getDate() + 10),
       );
 
-      await foundedStudent.save();
+      await newUserToUser.save();
 
       return {
         isSuccess: true,

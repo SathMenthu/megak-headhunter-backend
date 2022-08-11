@@ -9,7 +9,9 @@ import {
   UseInterceptors,
   UploadedFile,
   UseGuards,
+  Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 import { Roles } from 'src/decorators/roles.decorator';
@@ -60,11 +62,14 @@ export class UserController {
     return this.userService.checkRegisterLink(id, token);
   }
 
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @UseGuards(AuthGuard('jwt'), RolesGuard, IdsGuard)
   @Roles(RoleEnum.HR)
   @Post('/users-for-hr')
-  usersForHR(@Body() payload: FilterPayloadForHr<HrFilters>) {
-    return this.userService.findUsersForHR(payload);
+  usersForHR(
+    @Body() payload: FilterPayloadForHr<HrFilters>,
+    @Req() request: Request & { user: User },
+  ) {
+    return this.userService.findUsersForHR(payload, request.user.id);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard, IdsGuard)
