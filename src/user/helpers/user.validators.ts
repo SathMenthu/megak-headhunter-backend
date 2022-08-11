@@ -87,7 +87,7 @@ export const NumberInRangeValidator = (
     Number(value) >= starts &&
     Number(value) <= ends
   ) {
-    return value;
+    return Number(value);
   }
   throw new Error(
     `Liczba w polu ${checkedValue} powinna zmieścić się w przedziale ${starts} do ${ends} i być liczbą całkowitą.`,
@@ -134,7 +134,7 @@ export const StringValidator = (
 
 export const GitHubUserNameValidator = async (userName: string) => {
   const regex = /^[a-z\d](?:[a-z\d]|-(?=[a-z\d])){0,38}$/i;
-  if (!RegExp(regex).test(userName)) {
+  if (!userName || !RegExp(regex).test(userName) || userName.length < 1) {
     throw new Error(
       'Niestety, podana wartość pola Nazwa na GitHub jest nieprawidłowa',
     );

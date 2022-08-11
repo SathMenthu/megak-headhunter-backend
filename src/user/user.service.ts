@@ -558,8 +558,9 @@ export class UserService {
         : foundedUser.password;
       if (permission === RoleEnum.STUDENT) {
         // Github and avatar *
-        foundedUser.githubUsername =
-          githubUsername && (await GitHubUserNameValidator(githubUsername));
+        foundedUser.githubUsername = await GitHubUserNameValidator(
+          githubUsername,
+        );
 
         if (foundedUser.githubUsername) {
           foundedUser.avatar = decodeURIComponent(
