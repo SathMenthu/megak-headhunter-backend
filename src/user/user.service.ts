@@ -22,9 +22,9 @@ import {
   ManuallyCreatedUser,
   MinimalInformationToCreateEmail,
   RoleEnum,
+  StudentStatus,
   UrlAndEmailToSend,
   UserFilters,
-  StudentStatus,
 } from '../types';
 import {
   BooleanValidator,
@@ -742,6 +742,7 @@ export class UserService {
       if (foundStudent) {
         await UserToUser.remove(foundUserToUser);
         if (status === StudentStatus.HIRED) {
+          foundStudent.studentStatus = StudentStatus.HIRED;
           foundStudent.accountBlocked = true;
         }
 
@@ -856,9 +857,15 @@ export class UserService {
       const finalResults = results
         .filter(user => {
           if (studentStatus === 'BUSY') {
-            return Object.keys(filteredStudentIdsForHr).includes(user.id);
+            return (
+              Object.keys(filteredStudentIdsForHr).includes(user.id) &&
+              user.studentStatus !== 'HIRED'
+            );
           } else if (studentStatus === 'AVAILABLE') {
-            return !Object.keys(filteredStudentIdsForHr).includes(user.id);
+            return (
+              !Object.keys(filteredStudentIdsForHr).includes(user.id) &&
+              user.studentStatus !== 'HIRED'
+            );
           }
           return false;
         })
