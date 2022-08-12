@@ -848,21 +848,26 @@ export class UserService {
         take: limit,
         skip: (page - 1) * limit,
       });
-
-      const filteredStudentIdsForHr = arrayOfStudentsTalkingToHr.map(
-        user => user.studentId,
-      );
+      const filteredStudentIdsForHr = {};
+      arrayOfStudentsTalkingToHr.forEach(user => {
+        filteredStudentIdsForHr[user.studentId] = user.reservationEndDate;
+      });
 
       const finalResults = results
         .filter(user => {
           if (studentStatus === 'BUSY') {
-            return filteredStudentIdsForHr.includes(user.id);
+            return Object.keys(filteredStudentIdsForHr).includes(user.id);
           } else if (studentStatus === 'AVAILABLE') {
-            return !filteredStudentIdsForHr.includes(user.id);
+            return !Object.keys(filteredStudentIdsForHr).includes(user.id);
           }
           return false;
         })
-        .map(user => this.baseUserFilter(user));
+        .map(user => {
+          user.reservationEndDate = filteredStudentIdsForHr[user.id]
+            ? filteredStudentIdsForHr[user.id]
+            : null;
+          return this.baseUserFilter(user);
+        });
 
       return {
         users: finalResults,
