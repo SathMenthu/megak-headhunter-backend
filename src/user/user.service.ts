@@ -22,9 +22,9 @@ import {
   ManuallyCreatedUser,
   MinimalInformationToCreateEmail,
   RoleEnum,
+  StudentStatus,
   UrlAndEmailToSend,
   UserFilters,
-  StudentStatus,
 } from '../types';
 import {
   BooleanValidator,
@@ -46,6 +46,7 @@ import { UtilitiesService } from '../utilities/utilities.service';
 import { User } from './entities/user.entity';
 import { ForgotPasswordDto } from './forgot-password/forgot-password.dto';
 import { compareArrays } from './helpers/compare.arrays';
+import { UserToUser } from './entities/user-to-user.entity';
 
 @Injectable()
 export class UserService {
@@ -622,13 +623,14 @@ export class UserService {
         foundedUser.courses = courses || foundedUser.courses;
       } else if (permission === RoleEnum.HR) {
         foundedUser.company = StringValidator(company, 1, 'Nazwa firmy');
-        foundedUser.maxReservedStudents =
-          NumberInRangeValidator(
-            maxReservedStudents,
-            1,
-            999,
-            'Maksymalna liczba rozmów',
-          ) || 1;
+        foundedUser.maxReservedStudents = maxReservedStudents
+          ? NumberInRangeValidator(
+              maxReservedStudents,
+              1,
+              999,
+              'Maksymalna liczba rozmów',
+            )
+          : 1;
       }
 
       // Clear Token
@@ -725,14 +727,22 @@ export class UserService {
     }
   }
 
-  async changeStudentStatus(id: string, { status }: { status: StudentStatus }) {
+  async changeStudentStatus(
+    id: string,
+    { status }: { status: StudentStatus },
+    hrId: string,
+  ) {
     try {
       const foundStudent = await User.findOneBy({ id });
+      const foundUserToUser = await UserToUser.findOneByOrFail({
+        hrId,
+        studentId: id,
+      });
+
       if (foundStudent) {
-        foundStudent.studentStatus = status;
-        foundStudent.reservationEndDate = null;
-        foundStudent.assignedHR = null;
+        await UserToUser.remove(foundUserToUser);
         if (status === StudentStatus.HIRED) {
+          foundStudent.studentStatus = StudentStatus.HIRED;
           foundStudent.accountBlocked = true;
         }
 
@@ -753,23 +763,22 @@ export class UserService {
     }
   }
 
-  async findUsersForHR({
-    id,
-    filters,
-    limit,
-    page,
-    studentStatus,
-  }: FilterPayloadForHr<HrFilters>) {
+  async findUsersForHR(
+    { id, filters, limit, page, studentStatus }: FilterPayloadForHr<HrFilters>,
+    userFromRequest: string,
+  ) {
     try {
       const salaryRange = [
         filters.minSalary ? filters.minSalary : 0,
         filters.maxSalary ? filters.maxSalary : 9999999,
       ];
+      const arrayOfStudentsTalkingToHr = await UserToUser.findBy({
+        hrId: userFromRequest,
+      });
 
-      const [results, total] = await User.findAndCount({
+      const results = await User.find({
         where: [
           {
-            assignedHR: id ? { id } : null,
             firstName: Like(`%${filters.search}%`) || Not('0xError404'),
             courseCompletion: filters.courseCompletion.length
               ? In(filters.courseCompletion)
@@ -796,7 +805,6 @@ export class UserService {
                 ])
               : null,
             expectedSalary: Between(salaryRange[0], salaryRange[1]),
-            studentStatus: studentStatus,
             canTakeApprenticeship: filters.canTakeApprenticeship,
             monthsOfCommercialExp: filters.monthsOfCommercialExp
               ? MoreThanOrEqual(filters.monthsOfCommercialExp)
@@ -841,10 +849,36 @@ export class UserService {
         take: limit,
         skip: (page - 1) * limit,
       });
-      results.map(user => this.baseUserFilter(user));
+      const filteredStudentIdsForHr = {};
+      arrayOfStudentsTalkingToHr.forEach(user => {
+        filteredStudentIdsForHr[user.studentId] = user.reservationEndDate;
+      });
+
+      const finalResults = results
+        .filter(user => {
+          if (studentStatus === 'BUSY') {
+            return (
+              Object.keys(filteredStudentIdsForHr).includes(user.id) &&
+              user.studentStatus !== 'HIRED'
+            );
+          } else if (studentStatus === 'AVAILABLE') {
+            return (
+              !Object.keys(filteredStudentIdsForHr).includes(user.id) &&
+              user.studentStatus !== 'HIRED'
+            );
+          }
+          return false;
+        })
+        .map(user => {
+          user.reservationEndDate = filteredStudentIdsForHr[user.id]
+            ? filteredStudentIdsForHr[user.id]
+            : null;
+          return this.baseUserFilter(user);
+        });
+
       return {
-        users: results,
-        total,
+        users: finalResults,
+        total: finalResults && finalResults.length,
         message: 'The user list has been successfully downloaded',
         isSuccess: true,
       };
@@ -908,16 +942,29 @@ export class UserService {
 
   async reserveUser(id: string, payload: FilteredUser) {
     try {
-      const foundedStudent = await User.findOneByOrFail({ id });
-      const foundHr = await User.findOneByOrFail({ id: payload.id });
-      foundedStudent.studentStatus = StudentStatus.BUSY;
-      foundedStudent.assignedHR = foundHr;
-      // set 10 days cooldown, cron will check if experience student status will be changed to avaiable
-      foundedStudent.reservationEndDate = new Date(
+      await User.findOneByOrFail({ id });
+      await User.findOneByOrFail({ id: payload.id });
+      // foundedStudent.studentStatus = StudentStatus.BUSY;
+      // foundedStudent.assignedHR = foundHr;
+      // // set 10 days cooldown, cron will check if experience student status will be changed to avaiable
+      // foundedStudent.reservationEndDate = new Date(
+      //   new Date().setDate(new Date().getDate() + 10),
+      // );
+      // await foundedStudent.save();
+
+      const newUserToUser =
+        (await UserToUser.findOneBy({
+          hrId: payload.id,
+          studentId: id,
+        })) || new UserToUser();
+      newUserToUser.id = newUserToUser.id || uuid();
+      newUserToUser.hrId = payload.id;
+      newUserToUser.studentId = id;
+      newUserToUser.reservationEndDate = new Date(
         new Date().setDate(new Date().getDate() + 10),
       );
 
-      await foundedStudent.save();
+      await newUserToUser.save();
 
       return {
         isSuccess: true,

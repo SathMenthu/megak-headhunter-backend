@@ -4,7 +4,7 @@ import {
   RoleEnum,
   StudentStatus,
 } from '../../enums';
-import { BaseOfSort, ConvertedPayload, DefaultResponse } from '../global';
+import { BaseOfSort, DefaultResponse } from '../global';
 
 export interface UserBasicData {
   id: string;
@@ -15,6 +15,13 @@ export interface UserBasicData {
   permission: RoleEnum;
   avatar: string;
   accountBlocked: boolean;
+}
+
+export interface UserToUserBasicData {
+  id: string;
+  hrId: string;
+  studentId: string;
+  reservationEndDate: Date | null;
 }
 
 export interface ManuallyCreatedUser {
